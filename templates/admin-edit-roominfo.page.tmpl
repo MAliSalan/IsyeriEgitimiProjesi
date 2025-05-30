@@ -1,0 +1,183 @@
+{{template "base" .}}
+{{define "title"}}Oda Bilgileri Düzenle{{end}}
+{{define "content"}}
+<div class="container my-5 pt-5">
+    <div class="row">
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow">
+                <div class="card-body">
+                    <div class="text-center mb-5">
+                        <div class="profile-avatar bg-primary">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h4 class="mt-3">{{with .Data.User}}{{.Firstname}} {{.LastName}}{{end}}</h4>
+                        <p class="text-muted">Admin Paneli</p>
+                    </div>
+                    
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <a class="nav-link mb-2" href="/admin/dashboard">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a class="nav-link mb-2" href="/admin/reservations">
+                            <i class="fas fa-calendar-check me-2"></i>Tüm Rezervasyonlar
+                        </a>
+                        <a class="nav-link active mb-2" href="/admin/rooms">
+                            <i class="fas fa-door-open me-2"></i>Odalar
+                        </a>
+                        <a class="nav-link mb-2" href="/admin/users">
+                            <i class="fas fa-users me-2"></i>Kullanıcılar
+                        </a>
+                        <a class="nav-link mb-2" href="/admin/staff">
+                            <i class="fas fa-user-tie me-2"></i>Personel Yönetimi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Oda Bilgileri Düzenle - {{.Data.Room.RoomName}}</h5>
+                    <a href="/admin/rooms" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Geri Dön
+                    </a>
+                </div>
+                <div class="card-body">
+                    {{$room := index .Data "Room"}}
+                    {{$roomInfo := index .Data "RoomInfo"}}
+
+                    <form method="post" action="/admin/rooms/{{$room.ID}}/roominfo" class="needs-validation" novalidate>
+                        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="first_pic_url" class="form-label">Oda Resim URL</label>
+                                    <input required type="text" class="form-control {{with .Form.Errors.Get "first_pic_url"}} is-invalid {{end}}" 
+                                        id="first_pic_url" name="first_pic_url" value="{{$roomInfo.FirstPicURL}}">
+                                    {{with .Form.Errors.Get "first_pic_url"}}
+                                        <div class="invalid-feedback">{{.}}</div>
+                                    {{end}}
+                                    <div class="form-text">Örnek: https://example.com/image.jpg</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="room_max_cap" class="form-label">Maksimum Kapasite</label>
+                                    <input type="number" class="form-control" id="room_max_cap" name="room_max_cap" 
+                                        value="{{$roomInfo.RoomMaxCap}}" min="1" max="10">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="first_text" class="form-label">Oda Açıklaması</label>
+                            <textarea required class="form-control {{with .Form.Errors.Get "first_text"}} is-invalid {{end}}" 
+                                id="first_text" name="first_text" rows="5">{{$roomInfo.FirstText}}</textarea>
+                            {{with .Form.Errors.Get "first_text"}}
+                                <div class="invalid-feedback">{{.}}</div>
+                            {{end}}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="room_daily_price" class="form-label">Günlük Fiyat (TL)</label>
+                                    <input type="number" class="form-control" id="room_daily_price" name="room_daily_price" 
+                                        value="{{$roomInfo.RoomDailyPrice}}" min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="mt-4">Özellik 1</h3>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="first_tittle_fontawesome" class="form-label">Font Awesome İkon</label>
+                                    <input type="text" class="form-control" id="first_tittle_fontawesome" 
+                                        name="first_tittle_fontawesome" value="{{$roomInfo.FirstTittleFontawesome}}">
+                                    <div class="form-text">Örnek: fas fa-wifi</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="first_tittle" class="form-label">Başlık</label>
+                                    <input type="text" class="form-control" id="first_tittle" 
+                                        name="first_tittle" value="{{$roomInfo.FirstTittle}}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="first_tittle_text" class="form-label">Açıklama</label>
+                                    <input type="text" class="form-control" id="first_tittle_text" 
+                                        name="first_tittle_text" value="{{$roomInfo.FirstTittleText}}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="mt-4">Özellik 2</h3>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="second_tittle_fontawesome" class="form-label">Font Awesome İkon</label>
+                                    <input type="text" class="form-control" id="second_tittle_fontawesome" 
+                                        name="second_tittle_fontawesome" value="{{$roomInfo.SecondTittleFontawesome}}">
+                                    <div class="form-text">Örnek: fas fa-snowflake</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="second_tittle" class="form-label">Başlık</label>
+                                    <input type="text" class="form-control" id="second_tittle" 
+                                        name="second_tittle" value="{{$roomInfo.SecondTittle}}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="second_tittle_text" class="form-label">Açıklama</label>
+                                    <input type="text" class="form-control" id="second_tittle_text" 
+                                        name="second_tittle_text" value="{{$roomInfo.SecondTittleText}}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="mt-4">Özellik 3</h3>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="third_tittle_fontawesome" class="form-label">Font Awesome İkon</label>
+                                    <input type="text" class="form-control" id="third_tittle_fontawesome" 
+                                        name="third_tittle_fontawesome" value="{{$roomInfo.ThirdTittleFontawesome}}">
+                                    <div class="form-text">Örnek: fas fa-coffee</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="third_tittle" class="form-label">Başlık</label>
+                                    <input type="text" class="form-control" id="third_tittle" 
+                                        name="third_tittle" value="{{$roomInfo.ThirdTittle}}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="third_tittle_text" class="form-label">Açıklama</label>
+                                    <input type="text" class="form-control" id="third_tittle_text" 
+                                        name="third_tittle_text" value="{{$roomInfo.ThirdTittleText}}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col">
+                                <button type="submit" class="btn btn-primary">Kaydet</button>
+                                <a href="/admin/rooms" class="btn btn-secondary">İptal</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}} 

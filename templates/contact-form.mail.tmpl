@@ -1,0 +1,277 @@
+{{define "contact_form_mail"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeni İletişim Mesajı - Side Project Pansiyon</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .message-badge {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+            display: inline-block;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+        .alert-text {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 25px;
+            text-align: center;
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+        .sender-info {
+            background: linear-gradient(135deg, #e8f4f8 0%, #d6eaf8 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #3498db;
+        }
+        .info-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .info-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #2c3e50;
+            font-size: 16px;
+            word-break: break-word;
+        }
+        .message-content {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #28a745;
+        }
+        .message-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .message-text {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.7;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+        }
+        .timestamp {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin: 20px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .actions {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .action-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+        .action-button:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+        }
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer-text {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        .priority-high {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        .priority-medium {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .priority-low {
+            background: #f1f8e9;
+            border-left-color: #4caf50;
+        }
+        @media (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">🏨 Side Project Pansiyon</div>
+            <div class="subtitle">Yönetim Paneli - İletişim Merkezi</div>
+        </div>
+        
+        <div class="content">
+            <div style="text-align: center;">
+                <div class="message-badge">📧 Yeni İletişim Mesajı</div>
+            </div>
+            
+            <div class="alert-text">
+                <strong>⚡ Acil Bildirim:</strong> Web sitenizden yeni bir iletişim formu mesajı alındı ve yanıt bekliyor.
+            </div>
+            
+            <div class="sender-info">
+                <div class="info-header">
+                    👤 Gönderen Bilgileri
+                </div>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">📝 Ad Soyad</div>
+                        <div class="info-value">{{.Name}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">📧 E-posta</div>
+                        <div class="info-value">{{.Email}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">📞 Telefon</div>
+                        <div class="info-value">{{if .Phone}}{{.Phone}}{{else}}Belirtilmemiş{{end}}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">⏰ Alınma Zamanı</div>
+                        <div class="info-value">{{.Year}} yılında</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="message-content">
+                <div class="message-header">
+                    💬 Mesaj İçeriği
+                </div>
+                <div class="message-text">
+                    {{.Message}}
+                </div>
+            </div>
+            
+            <div class="timestamp">
+                🕐 Bu mesaj Side Project Pansiyon web sitesi iletişim formu aracılığıyla {{.Year}} yılında gönderilmiştir.
+            </div>
+            
+            <div class="actions">
+                <h4>🎯 Önerilen Aksiyonlar</h4>
+                <p>Bu müşteriye yanıt vermek için aşağıdaki seçenekleri kullanabilirsiniz:</p>
+                <a href="mailto:{{.Email}}" class="action-button">📧 E-posta Gönder</a>
+                {{if .Phone}}
+                <a href="tel:{{.Phone}}" class="action-button">📞 Telefon Et</a>
+                {{end}}
+                <a href="#" class="action-button">📋 Notlara Ekle</a>
+            </div>
+            
+            <div style="background: #f1f8e9; padding: 20px; border-radius: 10px; text-align: center; margin: 25px 0;">
+                <h4>⭐ Müşteri Memnuniyeti İpucu</h4>
+                <p style="margin: 0; font-size: 14px; color: #666;">
+                    <strong>Hedef Yanıt Süresi:</strong> 2 saat içinde yanıt verin<br>
+                    <strong>Öncelik:</strong> Yüksek (İletişim formu mesajları önceliklidir)
+                </p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-text">
+                <strong>Side Project Pansiyon - Yönetim Sistemi</strong>
+            </div>
+            <div class="footer-text">
+                Muğla Sıtkı Koçman Üniversitesi Teknoloji Fakültesi, Muğla
+            </div>
+            <div class="footer-text">
+                © {{.Year}} Side Project Pansiyon - Tüm hakları saklıdır.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{{end}} 

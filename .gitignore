@@ -1,0 +1,6 @@
+.DS_Store
+run.bat
+coverage
+go-sideproject.exe
+database.yml
+schema.sql

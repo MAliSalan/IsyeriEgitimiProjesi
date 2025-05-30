@@ -1,0 +1,73 @@
+{{template "base" .}}
+{{define "title"}}Kayıt Ol - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h1 class="card-title text-center mb-4">Kayıt Ol</h1>
+                        <p class="lead text-center mb-5">Hesap oluşturarak rezervasyonlarınızı yönetin.</p>
+
+                        <form class="needs-validation" method="post" action="/user/register">
+                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                            <div class="mb-4">
+                                <label for="first_name" class="form-label">Adınız</label>
+                                <input type="text" class='form-control {{with .Form.Errors.Get "first_name"}} is-invalid {{end}}' id="first_name" name="first_name" value="" required>
+                                <div class="invalid-feedback">
+                                    {{with .Form.Errors.Get "first_name"}}
+                                        {{.}}
+                                    {{else}}
+                                        Lütfen adınızı giriniz.
+                                    {{end}}
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="last_name" class="form-label">Soyadınız</label>
+                                <input type="text" class='form-control {{with .Form.Errors.Get "last_name"}} is-invalid {{end}}' id="last_name" name="last_name" value="" required>
+                                <div class="invalid-feedback">
+                                    {{with .Form.Errors.Get "last_name"}}
+                                        {{.}}
+                                    {{else}}
+                                        Lütfen soyadınızı giriniz.
+                                    {{end}}
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Email Adresiniz</label>
+                                <input type="email" class='form-control {{with .Form.Errors.Get "email"}} is-invalid {{end}}' id="email" name="email" value="" required>
+                                <div class="invalid-feedback">
+                                    {{with .Form.Errors.Get "email"}}
+                                        {{.}}
+                                    {{else}}
+                                        Lütfen geçerli bir email adresi giriniz.
+                                    {{end}}
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Şifreniz</label>
+                                <input type="password" class='form-control {{with .Form.Errors.Get "password"}} is-invalid {{end}}' id="password" name="password" value="" required>
+                                <div class="invalid-feedback">
+                                    {{with .Form.Errors.Get "password"}}
+                                        {{.}}
+                                    {{else}}
+                                        Lütfen şifrenizi giriniz.
+                                    {{end}}
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <p class="mb-0">Zaten hesabınız var mı? <a href="/user/login" class="text-primary">Giriş Yap</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}

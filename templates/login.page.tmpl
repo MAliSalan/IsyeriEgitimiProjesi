@@ -1,0 +1,54 @@
+{{template "base" .}}
+{{define "title"}}Giriş Yap - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h1 class="card-title text-center mb-4">Giriş Yap</h1>
+                        <p class="lead text-center mb-5">Hesabınıza giriş yaparak rezervasyonlarınızı yönetin.</p>
+
+                        <form class="needs-validation" novalidate method="post" action="/user/login">
+                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Email Adresiniz</label>
+                                <input type="email" class='form-control {{with .Form.Errors.Get "email"}} is-invalid {{end}}' id="email" name="email" value="" required>
+                                <div class="invalid-feedback">
+                                    Lütfen geçerli bir email adresi giriniz.
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Şifreniz</label>
+                                <input type="password" class='form-control {{with .Form.Errors.Get "password"}} is-invalid {{end}}' id="password" name="password" value="" required>
+                                {{if .Form.Errors.Get "password"}}
+                                    <div class="invalid-feedback">
+                                        {{.Form.Errors.Get "password"}}
+                                    </div>
+                                {{end}}
+                                {{if .Form.Errors.Get "login"}}
+                                    <div class="invalid-feedback">
+                                        {{.Form.Errors.Get "login"}}
+                                    </div>
+                                {{end}}
+                                <div class="invalid-feedback">
+                                    Lütfen şifrenizi giriniz.
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                                </button>
+                            </div>
+                        </form>
+
+                        <div class="text-center mt-4">
+                            <p class="mb-0">Hesabınız yok mu? <a href="/user/register" class="text-primary">Kayıt Ol</a></p>
+                            <p class="mt-2"><a href="/user/forgot-password" class="text-primary">Şifremi Unuttum</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}

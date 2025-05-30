@@ -1,0 +1,213 @@
+{{template "base" .}}
+{{define "title"}}Odalar Yönetimi - Admin Panel - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5 pt-5">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <div class="text-center mb-5">
+                            <div class="profile-avatar bg-primary">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <h4 class="mt-3">{{with .Data.User}}{{.Firstname}} {{.LastName}}{{end}}</h4>
+                            <p class="text-muted">Admin Paneli</p>
+                        </div>
+                        
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link mb-2" href="/admin/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                            <a class="nav-link mb-2" href="/admin/reservations">
+                                <i class="fas fa-calendar-check me-2"></i>Tüm Rezervasyonlar
+                            </a>
+                            <a class="nav-link active mb-2" href="/admin/rooms">
+                                <i class="fas fa-door-open me-2"></i>Odalar
+                            </a>
+                            <a class="nav-link mb-2" href="/admin/users">
+                                <i class="fas fa-users me-2"></i>Kullanıcılar
+                            </a>
+                            <a class="nav-link  mb-2" href="/admin/staff">
+                                <i class="fas fa-user-tie me-2"></i>Personel Yönetimi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-door-open me-2"></i>Odalar</h5>
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+                            <i class="fas fa-plus me-1"></i> Yeni Oda Ekle
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        {{if .Data.Rooms}}
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="roomsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Oda Adı</th>
+                                            <th>Oluşturulma Tarihi</th>
+                                            <th>Güncellenme Tarihi</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .Data.Rooms}}
+                                            <tr>
+                                                <td>{{.ID}}</td>
+                                                <td>{{.RoomName}}</td>
+                                                <td>{{index $.StringMap (printf "created_at_%d" .ID)}}</td>
+                                                <td>{{index $.StringMap (printf "updated_at_%d" .ID)}}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-info" onclick="editRoom('{{.ID}}', '{{.RoomName}}')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <a href="/admin/rooms/{{.ID}}/roominfo" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-cog"></i>
+                                                    </a>
+                                                    <button class="btn btn-sm btn-danger" onclick="confirmDeleteRoom('{{.ID}}')">
+                                                        <i class="fas fa-trash-alt"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="text-center py-5">
+                                <i class="fas fa-door-closed fa-4x text-muted mb-3"></i>
+                                <h5>Henüz bir oda bulunmamaktadır.</h5>
+                                <p class="text-muted">Yeni oda eklemek için "Yeni Oda Ekle" butonuna tıklayın.</p>
+                            </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oda Ekleme Modalı -->
+    <div class="modal fade" id="addRoomModal" tabindex="-1" aria-labelledby="addRoomModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addRoomModalLabel">Yeni Oda Ekle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/admin/rooms/add" method="post">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="roomName" class="form-label">Oda Adı</label>
+                            <input type="text" class="form-control" id="roomName" name="room_name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oda Düzenleme Modalı -->
+    <div class="modal fade" id="editRoomModal" tabindex="-1" aria-labelledby="editRoomModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editRoomModalLabel">Oda Düzenle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/admin/rooms/update" method="post" id="editRoomForm">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <input type="hidden" name="room_id" id="editRoomId">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="editRoomName" class="form-label">Oda Adı</label>
+                            <input type="text" class="form-control" id="editRoomName" name="room_name" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Güncelle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    // Sayfa yüklendiğinde çalışacak kod
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal açıldığında backdrop'un düzgün çalışmasını sağla
+        const addRoomModal = document.getElementById('addRoomModal');
+        if (addRoomModal) {
+            addRoomModal.addEventListener('hidden.bs.modal', function () {
+                // Modal kapandığında kalan backdrop elementlerini temizle
+                const backdrops = document.getElementsByClassName('modal-backdrop');
+                for (let i = 0; i < backdrops.length; i++) {
+                    backdrops[i].parentNode.removeChild(backdrops[i]);
+                }
+                // Body'den modal-open sınıfını kaldır
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            });
+        }
+        
+        // Aynı temizleme işlemini düzenleme modalı için de uygula
+        const editRoomModal = document.getElementById('editRoomModal');
+        if (editRoomModal) {
+            editRoomModal.addEventListener('hidden.bs.modal', function () {
+                const backdrops = document.getElementsByClassName('modal-backdrop');
+                for (let i = 0; i < backdrops.length; i++) {
+                    backdrops[i].parentNode.removeChild(backdrops[i]);
+                }
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+            });
+        }
+    });
+
+    function editRoom(id, name) {
+        document.getElementById('editRoomId').value = id;
+        document.getElementById('editRoomName').value = name;
+        
+        // Var olan backdrop'ları temizle
+        const existingBackdrops = document.getElementsByClassName('modal-backdrop');
+        for (let i = 0; i < existingBackdrops.length; i++) {
+            existingBackdrops[i].parentNode.removeChild(existingBackdrops[i]);
+        }
+        
+        const editModal = new bootstrap.Modal(document.getElementById('editRoomModal'));
+        editModal.show();
+    }
+    
+    function confirmDeleteRoom(id) {
+        Swal.fire({
+            title: 'Emin misiniz?',
+            text: "Bu odayı silmek istediğinizden emin misiniz? Bu işlem, bu odaya bağlı tüm rezervasyonları da silecektir.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Evet, sil!',
+            cancelButtonText: 'İptal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/admin/rooms/delete/${id}`;
+            }
+        });
+    }
+</script>
+{{end}} 

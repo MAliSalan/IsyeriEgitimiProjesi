@@ -1,0 +1,49 @@
+{{template "base" .}}
+{{define "title"}}Müsaitlik Kontrolü - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-6 mx-auto">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h1 class="card-title text-center mb-4">Müsaitlik Kontrolü</h1>
+                        <p class="lead text-center mb-5">Lütfen konaklama tarihlerinizi seçiniz.</p>
+
+                        <form action="search-availability" method="post" novalidate class="needs-validation">
+                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                            
+                            <div class="row" id="reservation-dates">
+                                <div class="col-md-6 mb-3">
+                                    <label for="start" class="form-label">Giriş Tarihi</label>
+                                    <input required class="form-control" type="text" name="start" id="start" placeholder="Giriş Tarihi">
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <label for="end" class="form-label">Çıkış Tarihi</label>
+                                    <input required class="form-control" type="text" name="end" id="end" placeholder="Çıkış Tarihi">
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-search me-2"></i>Müsaitlik Kontrolü
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    const elem = document.getElementById('reservation-dates');
+    const rangePicker = new DateRangePicker(elem, {
+        format: "yyyy-mm-dd",
+        minDate: new Date(),
+    });
+</script>
+{{end}}
+
+

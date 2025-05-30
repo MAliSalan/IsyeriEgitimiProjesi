@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezervasyon Durumu - Side Project Pansiyon</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ff7b7b 0%, #d63447 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .status-badge {
+            background: linear-gradient(135deg, #ff5722 0%, #e64a19 100%);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+            display: inline-block;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
+        }
+        .greeting {
+            font-size: 20px;
+            color: #2c3748;
+            margin-bottom: 20px;
+        }
+        .main-text {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .reservation-details {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #f44336;
+        }
+        .detail-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            color: #2c3748;
+            font-size: 16px;
+        }
+        .alternative-section {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #4caf50;
+        }
+        .suggestion-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .suggestion-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+        .suggestion-item:hover {
+            transform: translateY(-2px);
+        }
+        .suggestion-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .suggestion-title {
+            font-weight: bold;
+            color: #2c3748;
+            margin-bottom: 5px;
+        }
+        .suggestion-text {
+            font-size: 14px;
+            color: #666;
+        }
+        .contact-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .action-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+        .action-button:hover {
+            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+            transform: translateY(-2px);
+        }
+        .footer {
+            background: #2c3748;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer-text {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        @media (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+            .detail-grid, .suggestion-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">🏨 Side Project Pansiyon</div>
+            <div class="subtitle">Konfor ve huzurun buluştuğu nokta</div>
+        </div>
+        
+        <div class="content">
+            <div style="text-align: center;">
+                <div class="status-badge">😔 Üzgünüz, Rezervasyon İsteği</div>
+            </div>
+            
+            <div class="greeting">
+                Sayın {{.FirstName}} {{.LastName}}, 🙏
+            </div>
+            
+            <p class="main-text">
+                Side Project Pansiyon'u tercih ettiğiniz için çok teşekkür ederiz. Ne yazık ki aşağıdaki rezervasyon talebinizi karşılayamadık.
+            </p>
+            
+            <div class="reservation-details">
+                <div class="detail-header">
+                    📋 Talep Edilen Rezervasyon Detayları
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">🏨 Oda</div>
+                        <div class="detail-value">{{.RoomName}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">👥 Oda Kapasitesi</div>
+                        <div class="detail-value">{{if .Capacity}}{{.Capacity}} Kişi{{else}}Belirtilmemiş{{end}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📅 Giriş Tarihi</div>
+                        <div class="detail-value">{{.StartDate}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📅 Çıkış Tarihi</div>
+                        <div class="detail-value">{{.EndDate}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">🌙 Konaklama Süresi</div>
+                        <div class="detail-value">{{if .Nights}}{{.Nights}} Gece{{else}}Hesaplandı{{end}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">💰 Talep Edilen Fiyat</div>
+                        <div class="detail-value">{{if .TotalPrice}}{{.TotalPrice}} ₺{{else}}Hesaplanmıştı{{end}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📧 E-posta</div>
+                        <div class="detail-value">{{.Email}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📞 Telefon</div>
+                        <div class="detail-value">{{if .Phone}}{{.Phone}}{{else}}Belirtilmemiş{{end}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="main-text">
+                <strong>Reddetme Nedenleri:</strong> Bu tarihler için maalesef oda müsaitliğimiz bulunmuyor veya bakım çalışması planlanmış.
+            </p>
+            
+            <div class="alternative-section">
+                <h4>✨ Size Önerebileceğimiz Alternatifler</h4>
+                <div class="suggestion-grid">
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon">📅</div>
+                        <div class="suggestion-title">Farklı Tarihler</div>
+                        <div class="suggestion-text">Bir hafta öncesi veya sonrası için müsaitlik kontrol edin</div>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon">🏨</div>
+                        <div class="suggestion-title">Diğer Odalar</div>
+                        <div class="suggestion-text">Farklı oda tiplerinde müsaitlik olabilir</div>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon">⏰</div>
+                        <div class="suggestion-title">Kısa Süreli</div>
+                        <div class="suggestion-text">Daha kısa konaklama süresi deneyin</div>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon">🔔</div>
+                        <div class="suggestion-title">Bildirim Al</div>
+                        <div class="suggestion-text">İptal durumunda haber verelim</div>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="main-text" style="text-align: center;">
+                <strong>🌟 Yine de sizinle çalışmak istiyoruz!</strong>
+            </p>
+            
+            <div style="text-align: center;">
+                <a href="#" class="action-button">🔍 Yeni Rezervasyon Yap</a>
+                <a href="#" class="action-button">📞 Bizi Arayın</a>
+            </div>
+            
+            <div class="contact-info">
+                <h4>📞 Hemen İletişime Geçin</h4>
+                <p>Alternatif çözümler için uzmanlarımızla konuşun</p>
+                <p><strong>Telefon:</strong> +90 (555) 123-4567</p>
+                <p><strong>WhatsApp:</strong> +90 (555) 123-4567</p>
+                <p><strong>E-posta:</strong> info@sideproject.com</p>
+                <p style="font-size: 14px; margin-top: 15px;">
+                    <strong>📞 Çağrı Merkezi:</strong> 7/24 hizmetinizdeyiz
+                </p>
+            </div>
+            
+            <p class="main-text" style="text-align: center; font-style: italic;">
+                "Her kapanan kapı, yeni bir fırsatın başlangıcıdır. Sizin için mükemmel çözümü birlikte bulalım!" 💫
+            </p>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-text">
+                <strong>Side Project Pansiyon</strong>
+            </div>
+            <div class="footer-text">
+                Muğla Sıtkı Koçman Üniversitesi Teknoloji Fakültesi, Muğla
+            </div>
+            <div class="footer-text">
+                © {{.Year}} Tüm hakları saklıdır.
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

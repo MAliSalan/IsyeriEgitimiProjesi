@@ -1,0 +1,465 @@
+{{define "base"}}
+    <!doctype html>
+    <html lang="tr" data-bs-theme="light">
+
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <title>{{block "title" .}}Side Project Pansiyon{{end}}</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.1.2/dist/css/datepicker-bs4.min.css">
+        <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.5/dist/sweetalert2.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+        <script src="/static/js/app.js"></script>
+
+        <style>
+            :root {
+                --primary-bg: #ffffff;
+                --secondary-bg: #f8f9fa;
+                --card-bg: #ffffff;
+                --text-color: #212529;
+                --navbar-bg: #ffffff;
+                --footer-bg: #292b2c;
+                --footer-text: #f8f9fa;
+                --link-color: #0d6efd;
+                --border-color: #dee2e6;
+            }
+            
+            [data-bs-theme="dark"] {
+                --primary-bg: #121212;
+                --secondary-bg: #1e1e1e;
+                --card-bg: #2d2d2d;
+                --text-color: #f8f8f8;
+                --navbar-bg: #1a1d20;
+                --footer-bg: #121212;
+                --footer-text: #ffffff;
+                --link-color: #90caf9;
+                --border-color: #495057;
+            }
+            
+            body {
+                background-color: var(--primary-bg);
+                color: var(--text-color);
+                transition: background-color 0.3s, color 0.3s;
+            }
+            
+            .navbar {
+                background-color: var(--navbar-bg);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                transition: background-color 0.3s;
+            }
+            
+            .card {
+                background-color: var(--card-bg);
+                transition: background-color 0.3s;
+            }
+            
+            footer {
+                background-color: var(--footer-bg);
+                color: var(--footer-text);
+                transition: background-color 0.3s, color 0.3s;
+            }
+            
+            .dropdown-menu {
+                background-color: var(--card-bg);
+                transition: background-color 0.3s;
+            }
+            
+            .dropdown-item {
+                color: var(--text-color);
+                transition: color 0.3s;
+            }
+            
+            [data-bs-theme="dark"] .nav-link {
+                color: #e0e0e0 !important;
+            }
+            
+            [data-bs-theme="dark"] .dropdown-item:hover {
+                background-color: #3d4852;
+            }
+            
+            [data-bs-theme="dark"] .card {
+                border-color: #495057;
+            }
+            
+            .theme-toggle-icon {
+                font-size: 1.2rem;
+                cursor: pointer;
+            }
+            
+            .footer-main {
+                background-color: var(--footer-bg);
+            }
+            
+            .footer-bottom {
+                background-color: rgba(0, 0, 0, 0.2);
+            }
+        </style>
+    </head>
+
+    <body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-hotel me-2"></i>Side Project
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about">Hakkımızda</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            Odalar
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                            {{range .AllRooms}}
+                                <li><a class="dropdown-item" href="/room/{{.ID}}">{{.RoomName}}</a></li>
+                            {{else}}
+                                <li><a class="dropdown-item" href="/generals-quarters">Genel Odalar</a></li>
+                                <li><a class="dropdown-item" href="/majors-suite">Kraliyet Odası</a></li>
+                            {{end}}
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/search-availability">Rezervasyon</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/contact">İletişim</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/staff">Personellerimiz</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="theme-toggle" title="Tema Değiştir">
+                            <i class="fas fa-moon theme-toggle-icon" id="dark-icon"></i>
+                            <i class="fas fa-sun theme-toggle-icon d-none" id="light-icon"></i>
+                        </a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        {{if eq .IsAuthenticated 1}}
+                            <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> Hesabım
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li><a class="dropdown-item" href="/user/profile"><i class="fas fa-user me-2"></i>Profilim</a></li>
+                                    {{if eq .Access_Level 3}}
+                                    <li><a class="dropdown-item" href="/admin/dashboard"><i class="fas fa-tachometer-alt me-2"></i>Admin Paneli</a></li>
+                                    <li><a class="dropdown-item" href="/admin/staff"><i class="fas fa-user-tie me-2"></i>Personel Yönetimi</a></li>
+                                    {{end}}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/user/logout"><i class="fas fa-sign-out-alt me-2"></i>Çıkış</a></li>
+                                </ul>
+                            </div>
+                        {{else}}
+                        <a class="btn btn-primary px-4" href="/user/login">
+                            <i class="fas fa-sign-in-alt me-1"></i> Giriş
+                        </a>
+                        {{end}}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="alert-container container mt-4">
+        {{if .Flash}}
+            <div class="custom-alert alert-success" id="flash-message">
+                <i class="fas fa-check-circle me-2"></i>{{.Flash}}
+                <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            </div>
+        {{end}}
+
+        {{if .Error}}
+            <div class="custom-alert alert-danger" id="error-message">
+                <i class="fas fa-exclamation-circle me-2"></i>{{.Error}}
+                <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            </div>
+        {{end}}
+
+        {{if .Warning}}
+            <div class="custom-alert alert-warning" id="warning-message">
+                <i class="fas fa-exclamation-triangle me-2"></i>{{.Warning}}
+                <span class="alert-close" onclick="this.parentElement.style.display='none';">&times;</span>
+            </div>
+        {{end}}
+    </div>
+
+    {{block "content" .}}{{end}}
+
+    <footer class="footer mt-auto">
+        <div class="footer-main py-5">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6">
+                        <div class="footer-info">
+                            <h5>Side Project Pansiyon</h5>
+                            <p>Atlantik Okyanusu'nun eşsiz manzarası eşliğinde unutulmaz bir konaklama deneyimi yaşayın.</p>
+                            <div class="mt-4">
+                                <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i> Muğla Sıtkı Koçman Üniversitesi Teknoloji Fakültesi, Muğla</p>
+                                <p class="mb-1"><i class="fas fa-phone me-2"></i> +90 (555) 123 45 67</p>
+                                <p class="mb-1"><i class="fas fa-envelope me-2"></i> muhammed@example.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-links">
+                            <h5>Hızlı Linkler</h5>
+                            <ul class="list-unstyled">
+                                <li><a href="/"><i class="fas fa-chevron-right me-1"></i> Ana Sayfa</a></li>
+                                <li><a href="/about"><i class="fas fa-chevron-right me-1"></i> Hakkımızda</a></li>
+                                <li><a href="/search-availability"><i class="fas fa-chevron-right me-1"></i> Rezervasyon</a></li>
+                                <li><a href="/contact"><i class="fas fa-chevron-right me-1"></i> İletişim</a></li>
+                                <li><a href="/staff"><i class="fas fa-chevron-right me-1"></i> Personellerimiz</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-2 col-md-6">
+                        <div class="footer-links">
+                            <h5>Odalarımız</h5>
+                            <ul class="list-unstyled">
+                                {{range .AllRooms}}
+                                    <li><a href="/room/{{.ID}}"><i class="fas fa-chevron-right me-1"></i> {{.RoomName}}</a></li>
+                                {{else}}
+                                    <li><a href="/generals-quarters"><i class="fas fa-chevron-right me-1"></i> Genel Oda</a></li>
+                                    <li><a href="/majors-suite"><i class="fas fa-chevron-right me-1"></i> Kraliyet Odası</a></li>
+                                {{end}}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="col-lg-4 col-md-6">
+                        <div class="social-container">
+                            <h5>Beni Takip Etmek için aşağıdaki bağlantıları kullanabilirsiniz</h5>
+                            <div class="social-links">
+                                <a href="https://www.instagram.com/blackpikachu2019/" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                                <a href="https://www.linkedin.com/in/muhammed-ali-salan/" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                                <a href="https://www.youtube.com/@blackpikachu5721" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                                <a href="https://github.com/MAliSalan" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom py-3">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="mb-md-0">&copy; 2025 Side Project Pansiyon. Tüm hakları saklıdır.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <div class="legal-links">
+                            <a href="#">Gizlilik Politikası</a>
+                            <a href="#">Kullanım Şartları</a>
+                            <a href="#">Çerez Politikası</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.1.2/dist/js/datepicker-full.min.js"></script>
+    <script src="https://unpkg.com/notie"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.5/dist/sweetalert2.min.js"></script>
+
+    {{block "js" .}}{{end}}
+
+    <script>
+        // Tema değiştirme fonksiyonu
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const darkIcon = document.getElementById('dark-icon');
+            const lightIcon = document.getElementById('light-icon');
+            const htmlElement = document.documentElement;
+            
+            // LocalStorage'dan temayı al
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            htmlElement.setAttribute('data-bs-theme', currentTheme);
+            
+            // İkon görünürlüğünü ayarla
+            if (currentTheme === 'dark') {
+                darkIcon.classList.add('d-none');
+                lightIcon.classList.remove('d-none');
+            }
+            
+            // Tema değiştirme butonuna tıklama işlevi
+            themeToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                // Temayı değiştir
+                htmlElement.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                
+                // İkonları değiştir
+                if (newTheme === 'dark') {
+                    darkIcon.classList.add('d-none');
+                    lightIcon.classList.remove('d-none');
+                } else {
+                    lightIcon.classList.add('d-none');
+                    darkIcon.classList.remove('d-none');
+                }
+            });
+        });
+
+        let attention = Prompt();
+
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                let forms = document.getElementsByClassName('needs-validation');
+                Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+                
+                const flashMessage = document.getElementById('flash-message');
+                const errorMessage = document.getElementById('error-message');
+                const warningMessage = document.getElementById('warning-message');
+                
+                if (flashMessage) {
+                    showToast('success', flashMessage.textContent.trim());
+                    flashMessage.style.display = 'none';
+                }
+                if (errorMessage) {
+                    showToast('error', errorMessage.textContent.trim());
+                    errorMessage.style.display = 'none';
+                }
+                if (warningMessage) {
+                    showToast('warning', warningMessage.textContent.trim());
+                    warningMessage.style.display = 'none';
+                }
+            }, false);
+        })();
+
+        function notify(msg, msgType) {
+            showToast(msgType, msg);
+        }
+
+        function notifyModal(title, text, icon, confirmationButtonText) {
+            Swal.fire({
+                title: title,
+                html: text,
+                icon: icon,
+                confirmButtonText: confirmationButtonText
+            });
+        }
+        
+        function showToast(icon, message) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+            
+            Toast.fire({
+                icon: icon,
+                title: message
+            });
+        }
+        
+        function confirmAction(title, message, confirmButtonText, confirmButtonIcon, callback) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: confirmButtonText,
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    callback();
+                }
+            });
+        }
+        
+        function confirmDeletePayment(id) {
+            confirmAction(
+                'Emin misiniz?',
+                'Bu ödeme yöntemini silmek istediğinizden emin misiniz?',
+                'Evet, Sil',
+                'warning',
+                function() {
+                    window.location.href = `/user/payment/delete/${id}`;
+                }
+            );
+        }
+        
+        function confirmCancelReservation(id) {
+            confirmAction(
+                'Rezervasyon İptali',
+                'Bu rezervasyonu iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+                'Evet, İptal Et',
+                'warning',
+                function() {
+                    window.location.href = `/user/reservation/cancel/${id}`;
+                }
+            );
+        }
+        
+        function validateForm(formId, submitButtonId) {
+            const form = document.getElementById(formId);
+            const submitButton = document.getElementById(submitButtonId);
+            
+            if (form && submitButton) {
+                submitButton.addEventListener('click', function(e) {
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const invalidInputs = form.querySelectorAll(':invalid');
+                        if (invalidInputs.length > 0) {
+                            let errorMessages = '';
+                            invalidInputs.forEach(input => {
+                                const fieldName = input.getAttribute('data-field-name') || input.getAttribute('name');
+                                errorMessages += `<li>${fieldName} alanı geçerli değil</li>`;
+                            });
+                            
+                            Swal.fire({
+                                title: 'Form Hatası',
+                                html: `<ul>${errorMessages}</ul>`,
+                                icon: 'error'
+                            });
+                        }
+                    }
+                    form.classList.add('was-validated');
+                });
+            }
+        }
+    </script>
+    </body>
+    </html>
+{{end}}

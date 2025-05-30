@@ -1,0 +1,64 @@
+{{template "base" .}}
+{{define "title"}}{{with index .Data "Staff"}}{{.FirstName}} {{.LastName}} - Side Project Pansiyon{{end}}{{end}}
+{{define "content"}}
+    {{with index .Data "Staff"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm">
+                    {{if eq .PhotoURL ""}}
+                        <img src="https://via.placeholder.com/400x600?text=Fotoğraf+Yok" class="card-img-top" alt="{{.FirstName}} {{.LastName}} Fotoğrafı" style="object-fit: cover;">
+                    {{else}}
+                        <img src="{{.PhotoURL}}" class="card-img-top" alt="{{.FirstName}} {{.LastName}} Fotoğrafı" style="object-fit: cover;">
+                    {{end}}
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <div>
+                                <h1 class="mb-1">{{.FirstName}} {{.LastName}}</h1>
+                                <span class="badge bg-primary">{{.StaffRank}}</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">İletişim Bilgileri</h5>
+                            {{if ne .Email ""}}
+                            <div class="mb-2">
+                                <i class="fas fa-envelope me-2 text-primary"></i>
+                                <a href="mailto:{{.Email}}">{{.Email}}</a>
+                            </div>
+                            {{end}}
+                            {{if ne .Phone ""}}
+                            <div class="mb-2">
+                                <i class="fas fa-phone me-2 text-primary"></i>
+                                <a href="tel:{{.Phone}}">{{.Phone}}</a>
+                            </div>
+                            {{end}}
+                            {{if ne .Floor ""}}
+                            <div class="mb-2">
+                                <i class="fas fa-building me-2 text-primary"></i>
+                                Kat: {{.Floor}}
+                            </div>
+                            {{end}}
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Hakkında</h5>
+                            <p>{{.Bio}}</p>
+                        </div>
+
+                        <div class="text-end mt-4">
+                            <a href="/staff" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Tüm Personele Dön
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{end}}
+{{end}} 

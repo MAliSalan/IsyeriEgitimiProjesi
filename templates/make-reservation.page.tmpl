@@ -1,0 +1,291 @@
+{{template "base" .}}
+{{define "title"}}Rezervasyon - Side Project Pansiyon{{end}}
+{{define "css"}}
+<style>
+    .border-dashed {
+        border: 2px dashed #dee2e6 !important;
+    }
+    .border-dashed:hover {
+        border-color: #6c757d !important;
+    }
+</style>
+{{end}}
+{{define "content"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        {{$res := index .Data "reservation"}}
+                        {{$roomInfo := index .Data "room_info"}}
+                        {{$totalDays := index .Data "total_days"}}
+                        {{$totalAmount := index .Data "total_amount"}}
+                        
+                        <h1 class="card-title text-center mb-4">Rezervasyon Yap</h1>
+                        <p class="lead text-center mb-5">Lütfen bilgilerinizi eksiksiz doldurunuz.</p>
+
+                        <div class="alert alert-info mb-4">
+                            <h5 class="alert-heading">Rezervasyon Bilgileri</h5>
+                            <p class="mb-0">
+                                <i class="fas fa-door-open me-2"></i>Oda: {{$res.Room.RoomName}}<br>
+                                <i class="fas fa-calendar-check me-2"></i>Giriş: {{index .StringMap "start_date"}}<br>
+                                <i class="fas fa-calendar-times me-2"></i>Çıkış: {{index .StringMap "end_date"}}<br>
+                                <i class="fas fa-envelope me-2"></i>Mail: {{$res.Email}}
+                            </p>
+                        </div>
+
+                        <!-- Fiyat Bilgileri -->
+                        <div class="alert alert-success mb-4">
+                            <h5 class="alert-heading"><i class="fas fa-money-bill-wave me-2"></i>Fiyat Detayları</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1">Günlük Fiyat: <strong>{{$roomInfo.RoomDailyPrice}} ₺</strong></p>
+                                    <p class="mb-1">Gün Sayısı: <strong>{{$totalDays}} gün</strong></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1">Maksimum Kapasite: <strong>{{$roomInfo.RoomMaxCap}} kişi</strong></p>
+                                    <h4 class="text-success mb-0">Toplam: <strong>{{$totalAmount}} ₺</strong></h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form action="/make-reservation" method="post" class="needs-validation" novalidate>
+                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                            <input type="hidden" name="start_date" value="{{index .StringMap "start_date"}}">
+                            <input type="hidden" name="end_date" value="{{index .StringMap "end_date"}}">
+                            <input type="hidden" name="room_id" value="{{$res.RoomID}}">
+                            <input type="hidden" name="room_name" value="{{$res.Room.RoomName}}">
+                            <input type="hidden" name="email" value="{{$res.Email}}">
+                            <input type="hidden" name="total_amount" value="{{$totalAmount}}">
+
+                            <div class="mb-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="for_someone_else" name="for_someone_else">
+                                    <label class="form-check-label" for="for_someone_else">
+                                        Başkası için rezervasyon yapıyorum
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">Adınız</label>
+                                    {{with .Form.Errors.Get "first_name"}}
+                                    <div class="text-danger">{{.}}</div>
+                                    {{end}}
+                                    <input class="form-control {{with .Form.Errors.Get "first_name"}}is-invalid{{end}}"
+                                           id="first_name" autocomplete="off" type="text"
+                                           name="first_name" value="{{$res.FirstName}}" required>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Soyadınız</label>
+                                    {{with .Form.Errors.Get "last_name"}}
+                                    <div class="text-danger">{{.}}</div>
+                                    {{end}}
+                                    <input class="form-control {{with .Form.Errors.Get "last_name"}}is-invalid{{end}}"
+                                           id="last_name" autocomplete="off" type="text"
+                                           name="last_name" value="{{$res.LastName}}" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="phone" class="form-label">Telefon Numaranız <small class="text-muted">(Opsiyonel)</small></label>
+                                {{with .Form.Errors.Get "phone"}}
+                                <div class="text-danger">{{.}}</div>
+                                {{end}}
+                                <input class="form-control {{with .Form.Errors.Get "phone"}}is-invalid{{end}}"
+                                       id="phone" autocomplete="off" type="tel"
+                                       name="phone" value="{{$res.Phone}}">
+                                <div class="form-text">Acil durumlarda size ulaşabilmemiz için telefon numaranızı paylaşmanızı öneririz.</div>
+                            </div>
+
+                            <!-- Ödeme Seçenekleri -->
+                            <div class="mb-4">
+                                <h5><i class="fas fa-credit-card me-2"></i>Ödeme Yöntemi</h5>
+                                <div class="row">
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="payment_card" value="card" checked>
+                                            <label class="form-check-label" for="payment_card">
+                                                <i class="fas fa-credit-card me-2"></i>Kredi Kartı ile Öde
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="payment_balance" value="balance">
+                                            <label class="form-check-label" for="payment_balance">
+                                                <i class="fas fa-wallet me-2"></i>Bakiye ile Öde
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="payment_method" id="payment_later" value="later">
+                                            <label class="form-check-label" for="payment_later">
+                                                <i class="fas fa-clock me-2"></i>Daha Sonra Öde
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kart Bilgileri (sadece kart seçildiğinde görünür) -->
+                            <div id="card_details" class="mb-4">
+                                {{$paymentMethods := index .Data "payment_methods"}}
+                                {{if $paymentMethods}}
+                                <!-- Kayıtlı Kartlar -->
+                                <div class="mb-3">
+                                    <h6><i class="fas fa-credit-card me-2"></i>Kayıtlı Kartlarım</h6>
+                                    <div class="row">
+                                        {{range $index, $pm := $paymentMethods}}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="saved_card" id="saved_card_{{$pm.ID}}" value="{{$pm.ID}}" {{if eq $index 0}}checked{{end}}>
+                                                <label class="form-check-label" for="saved_card_{{$pm.ID}}">
+                                                    <div class="card card-body h-100 py-2">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <strong>{{$pm.CardType}}</strong><br>
+                                                                <small class="text-muted">**** **** **** {{$pm.LastFour}}</small><br>
+                                                                <small class="text-muted">{{$pm.CardName}}</small>
+                                                            </div>
+                                                            <i class="fab fa-cc-{{if eq $pm.CardType "Visa"}}visa{{else if eq $pm.CardType "MasterCard"}}mastercard{{else if eq $pm.CardType "American Express"}}amex{{else}}generic{{end}} fa-2x"></i>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        {{end}}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="saved_card" id="new_card" value="new">
+                                                <label class="form-check-label" for="new_card">
+                                                    <div class="card card-body h-100 py-2 border-dashed">
+                                                        <div class="text-center">
+                                                            <i class="fas fa-plus fa-2x text-muted mb-2"></i><br>
+                                                            <small class="text-muted">Yeni Kart Kullan</small>
+                                                        </div>
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{end}}
+
+                                <!-- Yeni Kart Bilgileri (sadece "Yeni Kart Kullan" seçildiğinde görünür) -->
+                                <div id="new_card_details" {{if $paymentMethods}}style="display: none;"{{end}}>
+                                    <h6>Yeni Kart Bilgileri</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card_number" class="form-label">Kart Numarası</label>
+                                            <input type="text" class="form-control" id="card_number" name="card_number" placeholder="1234 5678 9012 3456">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card_name" class="form-label">Kart Sahibi</label>
+                                            <input type="text" class="form-control" id="card_name" name="card_name" placeholder="Ad Soyad">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card_expiry" class="form-label">Son Kullanma</label>
+                                            <input type="text" class="form-control" id="card_expiry" name="card_expiry" placeholder="MM/YY">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card_cvv" class="form-label">CVV</label>
+                                            <input type="text" class="form-control" id="card_cvv" name="card_cvv" placeholder="123">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-check-circle me-2"></i>Rezervasyonu Tamamla
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const forSomeoneElseCheckbox = document.getElementById('for_someone_else');
+            const firstNameInput = document.getElementById('first_name');
+            const lastNameInput = document.getElementById('last_name');
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+            
+            // Ödeme yöntemi kontrolü
+            const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+            const cardDetails = document.getElementById('card_details');
+            
+            // Kayıtlı kart seçimi kontrolü
+            const savedCardRadios = document.querySelectorAll('input[name="saved_card"]');
+            const newCardDetails = document.getElementById('new_card_details');
+            
+            function toggleCardDetails() {
+                const selectedPayment = document.querySelector('input[name="payment_method"]:checked').value;
+                if (selectedPayment === 'card') {
+                    cardDetails.style.display = 'block';
+                } else {
+                    cardDetails.style.display = 'none';
+                }
+            }
+            
+            function toggleNewCardDetails() {
+                if (newCardDetails) {
+                    const selectedCard = document.querySelector('input[name="saved_card"]:checked');
+                    if (selectedCard && selectedCard.value === 'new') {
+                        newCardDetails.style.display = 'block';
+                    } else {
+                        newCardDetails.style.display = 'none';
+                    }
+                }
+            }
+            
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', toggleCardDetails);
+            });
+            
+            savedCardRadios.forEach(radio => {
+                radio.addEventListener('change', toggleNewCardDetails);
+            });
+            
+            // Sayfa yüklendiğinde kontrolü yap
+            toggleCardDetails();
+            toggleNewCardDetails();
+            
+            let savedValues = {
+                firstName: firstNameInput.value,
+                lastName: lastNameInput.value,
+                email: emailInput.value,
+                phone: phoneInput.value
+            };
+            
+            forSomeoneElseCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    savedValues = {
+                        firstName: firstNameInput.value,
+                        lastName: lastNameInput.value,
+                        email: emailInput.value,
+                        phone: phoneInput.value
+                    };
+                    
+                    firstNameInput.value = '';
+                    lastNameInput.value = '';
+                    emailInput.value = '';
+                    phoneInput.value = '';
+                } else {
+                    firstNameInput.value = savedValues.firstName;
+                    lastNameInput.value = savedValues.lastName;
+                    emailInput.value = savedValues.email;
+                    phoneInput.value = savedValues.phone;
+                }
+            });
+        });
+    </script>
+{{end}}

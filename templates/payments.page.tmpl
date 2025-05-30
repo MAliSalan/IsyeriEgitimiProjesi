@@ -1,0 +1,546 @@
+{{template "base" .}}
+{{define "title"}}Ödeme Bilgilerim - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5 pt-5">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <div class="text-center mb-5">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h4 class="mt-3">{{with .Data.User}}{{.Firstname}} {{.LastName}}{{end}}</h4>
+                            <div class="mb-2">
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-wallet me-1"></i>{{with .Data.User}}{{.Balance}}{{end}} ₺
+                                </span>
+                            </div>
+                            <p class="text-muted">{{with .Data.User}}{{.Email}}{{end}}</p>
+                        </div>
+                        
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link mb-2" href="/user/profile">
+                                <i class="fas fa-user me-2"></i>Profil Bilgileri
+                            </a>
+                            <a class="nav-link mb-2" href="/user/reservations">
+                                <i class="fas fa-calendar-check me-2"></i>Rezervasyonlarım
+                            </a>
+                            <a class="nav-link active mb-2" href="/user/payments">
+                                <i class="fas fa-credit-card me-2"></i>Ödeme Bilgilerim
+                            </a>
+                            <a class="nav-link" href="/user/password">
+                                <i class="fas fa-lock me-2"></i>Şifre Değiştir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <!-- Bakiye Kartı -->
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-wallet me-2"></i>Bakiyem</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="text-center">
+                                    <h3 class="text-primary mb-0">
+                                        {{with .Data.User}}{{.Balance}}{{end}} ₺
+                                    </h3>
+                                    <small class="text-muted">Mevcut Bakiye</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary w-100" onclick="showAddBalanceModal()">
+                                    <i class="fas fa-plus me-2"></i>Bakiye Ekle
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Kayıtlı Kartlarım</h5>
+                    </div>
+                    <div class="card-body">
+                        {{if .Data.PaymentMethods}}
+                            <div class="saved-payment-methods mb-4">
+                                {{range .Data.PaymentMethods}}
+                                    <div class="payment-method-card mb-3 p-3 border rounded">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-credit-card fa-lg text-primary me-3"></i>
+                                                    <div>
+                                                        <h6 class="mb-0">{{.CardName}}</h6>
+                                                        <h6 class="mb-0">**** **** **** {{.LastFour}}</h6>
+                                                        <h6 class="mb-0">{{.CardType}} {{if eq .CardType "Visa"}}<i class="fab fa-cc-visa text-primary"></i>{{else if eq .CardType "MasterCard"}}<i class="fab fa-cc-mastercard text-danger"></i>{{else if eq .CardType "American Express"}}<i class="fab fa-cc-amex text-info"></i>{{else if eq .CardType "Troy"}}<img src="/static/images/troy-logo.png" alt="Troy" style="height: 20px;">{{else}}<i class="fas fa-credit-card text-secondary"></i>{{end}}</h6>
+                                                        <small class="text-muted">Son Kullanma: {{.ExpiryMonth}}/{{.ExpiryYear}}</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <button class="btn btn-sm btn-outline-primary me-2" onclick="editPaymentMethod('{{.ID}}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-danger" onclick="confirmDeletePayment('{{.ID}}')">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {{end}}
+                            </div>
+                        {{else}}
+                            <div class="text-center py-3 mb-4">
+                                <p>Henüz kayıtlı ödeme bilginiz bulunmamaktadır.</p>
+                            </div>
+                        {{end}}
+                        
+                        <form id="payment-form" class="needs-validation" method="post" action="/user/payment/add" novalidate>
+                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                            <h6 class="mb-3">Yeni Ödeme Yöntemi Ekle</h6>
+                            
+                            <div class="mb-3">
+                                <label for="card_name" class="form-label">Kart Üzerindeki İsim</label>
+                                <input type="text" class="form-control {{with .Form.Errors.Get "card_name"}}is-invalid{{end}}" 
+                                    id="card_name" name="card_name" data-field-name="Kart Sahibi Adı" required>
+                                {{with .Form.Errors.Get "card_name"}}
+                                <div class="invalid-feedback">{{.}}</div>
+                                {{end}}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="card_number" class="form-label">Kart Numarası</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control {{with .Form.Errors.Get "card_number"}}is-invalid{{end}}" 
+                                        id="card_number" name="card_number" data-field-name="Kart Numarası"
+                                        placeholder="**** **** **** ****" required
+                                        oninput="updateCardIcon(this.value)">
+                                    <span class="input-group-text" id="card-type-icon">
+                                        <i class="fab fa-cc-visa text-primary d-none" id="visa-icon"></i>
+                                        <i class="fab fa-cc-mastercard text-danger d-none" id="mastercard-icon"></i>
+                                        <i class="fab fa-cc-amex text-info d-none" id="amex-icon"></i>
+                                        <img src="/static/images/troy-logo.png" alt="Troy" style="height: 20px;" class="d-none" id="troy-icon">
+                                        <i class="fas fa-credit-card text-muted" id="default-icon"></i>
+                                    </span>
+                                    {{with .Form.Errors.Get "card_number"}}
+                                    <div class="invalid-feedback">{{.}}</div>
+                                    {{end}}
+                                </div>
+                            </div>
+
+                            <script>
+                            function updateCardIcon(cardNumber) {
+                                // Tüm ikonları gizle
+                                document.getElementById('visa-icon').classList.add('d-none');
+                                document.getElementById('mastercard-icon').classList.add('d-none');
+                                document.getElementById('amex-icon').classList.add('d-none');
+                                document.getElementById('troy-icon').classList.add('d-none');
+                                document.getElementById('default-icon').classList.remove('d-none');
+
+                                // Boşlukları kaldır
+                                cardNumber = cardNumber.replace(/\s/g, '');
+                                
+                                // Kart tipini belirle ve ilgili ikonu göster
+                                if (cardNumber.startsWith('4')) {
+                                    document.getElementById('visa-icon').classList.remove('d-none');
+                                    document.getElementById('default-icon').classList.add('d-none');
+                                } else if (cardNumber.startsWith('5')) {
+                                    document.getElementById('mastercard-icon').classList.remove('d-none');
+                                    document.getElementById('default-icon').classList.add('d-none');
+                                } else if (cardNumber.startsWith('3')) {
+                                    document.getElementById('amex-icon').classList.remove('d-none');
+                                    document.getElementById('default-icon').classList.add('d-none');
+                                } else if (cardNumber.startsWith('9')) {
+                                    document.getElementById('troy-icon').classList.remove('d-none');
+                                    document.getElementById('default-icon').classList.add('d-none');
+                                }
+                            }
+                            </script>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="expiry_date" class="form-label">Son Kullanma Tarihi</label>
+                                    <input type="text" class="form-control {{with .Form.Errors.Get "expiry_date"}}is-invalid{{end}}" 
+                                        id="expiry_date" name="expiry_date" data-field-name="Son Kullanma Tarihi"
+                                        placeholder="MM/YY" required>
+                                    {{with .Form.Errors.Get "expiry_date"}}
+                                    <div class="invalid-feedback">{{.}}</div>
+                                    {{end}}
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="cvv" class="form-label">CVV</label>
+                                    <input type="text" class="form-control {{with .Form.Errors.Get "cvv"}}is-invalid{{end}}" 
+                                        id="cvv" name="cvv" data-field-name="CVV"
+                                        placeholder="***" required>
+                                    {{with .Form.Errors.Get "cvv"}}
+                                    <div class="invalid-feedback">{{.}}</div>
+                                    {{end}}
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" id="payment-submit" class="btn btn-primary">
+                                    <i class="fas fa-plus-circle me-2"></i>Ödeme Yöntemi Ekle
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form doğrulama işlemi
+        validateForm('payment-form', 'payment-submit');
+        
+        // Kart formatlamaları
+        const cardNumberInput = document.getElementById('card_number');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 16) {
+                    value = value.slice(0, 16);
+                }
+                if (value.length > 0) {
+                    value = value.match(new RegExp('.{1,4}', 'g')).join(' ');
+                }
+                e.target.value = value;
+            });
+        }
+        
+        const expiryDateInput = document.getElementById('expiry_date');
+        if (expiryDateInput) {
+            expiryDateInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 2) {
+                    value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                }
+                e.target.value = value;
+            });
+        }
+        
+        const cvvInput = document.getElementById('cvv');
+        if (cvvInput) {
+            cvvInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 3) {
+                    value = value.slice(0, 3);
+                }
+                e.target.value = value;
+            });
+        }
+        
+        // Ödeme formu için bildirim
+        const paymentForm = document.getElementById('payment-form');
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', function(e) {
+                if (this.checkValidity()) {
+                    e.preventDefault();
+                    
+                    // Bildirim göster
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                    
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Ödeme yöntemi ekleniyor...'
+                    });
+                    
+                    // Form gönder
+                    const form = this;
+                    setTimeout(function() {
+                        form.submit();
+                    }, 1500);
+                }
+            });
+        }
+    });
+    
+    // Ödeme yöntemi silme işlemi
+    function confirmDeletePayment(id) {
+        Swal.fire({
+            title: 'Emin misiniz?',
+            text: 'Bu ödeme yöntemini silmek istediğinizden emin misiniz?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, Sil',
+            cancelButtonText: 'Vazgeç'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Bildirim göster
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+                
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Ödeme yöntemi siliniyor...'
+                });
+                
+                // Silme işlemini başlat
+                setTimeout(function() {
+                    window.location.href = `/user/payment/delete/${id}`;
+                }, 1500);
+                
+            }
+        });
+    }
+    
+    // Ödeme yöntemi güncelleme işlemi
+    function editPaymentMethod(id) {
+        Swal.fire({
+            title: 'Kart Bilgilerini Güncelle',
+            html: `
+                <form id="edit-payment-form" class="text-start">
+                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                    <div class="mb-3">
+                        <label for="edit_card_name" class="form-label">Kart Üzerindeki İsim</label>
+                        <input type="text" class="form-control" id="edit_card_name" name="card_name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_expiry_date" class="form-label">Son Kullanma Tarihi</label>
+                        <input type="text" class="form-control" id="edit_expiry_date" name="expiry_date" 
+                            placeholder="MM/YY" required>
+                    </div>
+                </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Güncelle',
+            cancelButtonText: 'İptal',
+            focusConfirm: false,
+            customClass: {
+                popup: 'swal2-popup',
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-secondary'
+            },
+            didOpen: () => {
+                const editExpiryDateInput = document.getElementById('edit_expiry_date');
+                if (editExpiryDateInput) {
+                    editExpiryDateInput.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/\D/g, '');
+                        if (value.length > 2) {
+                            value = value.slice(0, 2) + '/' + value.slice(2, 4);
+                        }
+                        e.target.value = value;
+                    });
+                }
+            },
+            preConfirm: () => {
+                return new Promise((resolve) => {
+                    const cardName = document.getElementById('edit_card_name').value;
+                    const expiryDate = document.getElementById('edit_expiry_date').value;
+                    
+                    if (!cardName || !expiryDate) {
+                        Swal.showValidationMessage('Tüm alanları doldurunuz');
+                        resolve(false);
+                        return;
+                    }
+                    
+                    const formData = new FormData();
+                    formData.append('csrf_token', "{{.CSRFToken}}");
+                    formData.append('card_name', cardName);
+                    formData.append('expiry_date', expiryDate);
+                    
+                    // Yükleniyor bildirimi göster
+                    Swal.showLoading();
+                    
+                    fetch(`/user/payment/edit/${id}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            Swal.showValidationMessage(data.error);
+                            resolve(false);
+                        } else {
+                            resolve(data);
+                        }
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage('Kart güncellenirken bir hata oluştu');
+                        resolve(false);
+                    });
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Bildirim göster
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer)
+                        toast.addEventListener('mouseleave', Swal.resumeTimer)
+                    }
+                });
+                
+                Toast.fire({
+                    icon: 'success',
+                    title: 'Kart bilgileri başarıyla güncellendi'
+                });
+                
+                setTimeout(() => {
+                    window.location.href = "/user/payments";
+                }, 1500);
+            }
+        });
+    }
+    
+    // Bakiye ekleme modal'ı
+    function showAddBalanceModal() {
+        Swal.fire({
+            title: 'Bakiye Ekle',
+            html: `
+                <form id="add-balance-form" class="text-start">
+                    <div class="mb-3">
+                        <label for="balance_amount" class="form-label">Eklenecek Miktar (₺)</label>
+                        <input type="number" class="form-control" id="balance_amount" name="balance_amount" 
+                            min="10" max="10000" required placeholder="Örn: 500">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Ödeme Yöntemi</label>
+                        <div class="saved-cards-list">
+                            {{if .Data.PaymentMethods}}
+                                {{range .Data.PaymentMethods}}
+                                <div class="form-check payment-method-option mb-2">
+                                    <input class="form-check-input" type="radio" name="payment_method" 
+                                        id="saved_card_{{.ID}}" value="card_{{.ID}}">
+                                    <label class="form-check-label d-flex align-items-center" for="saved_card_{{.ID}}">
+                                        <div class="d-flex align-items-center">
+                                            {{if eq .CardType "Visa"}}<i class="fab fa-cc-visa text-primary me-2"></i>
+                                            {{else if eq .CardType "MasterCard"}}<i class="fab fa-cc-mastercard text-danger me-2"></i>
+                                            {{else if eq .CardType "American Express"}}<i class="fab fa-cc-amex text-info me-2"></i>
+                                            {{else if eq .CardType "Troy"}}<img src="/static/images/troy-logo.png" alt="Troy" style="height: 20px;" class="me-2">
+                                            {{else}}<i class="fas fa-credit-card text-secondary me-2"></i>{{end}}
+                                            <span>{{.CardType}} **** {{.LastFour}}</span>
+                                        </div>
+                                    </label>
+                                </div>
+                                {{end}}
+                            {{else}}
+                                <p class="text-muted small">Henüz kayıtlı kartınız bulunmuyor.</p>
+                            {{end}}
+                        </div>
+                    </div>
+                </form>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Bakiye Ekle',
+            cancelButtonText: 'İptal',
+            focusConfirm: false,
+            width: '500px',
+            customClass: {
+                popup: 'swal2-popup',
+                confirmButton: 'btn btn-primary',
+                cancelButton: 'btn btn-secondary'
+            },
+            preConfirm: () => {
+                const amount = document.getElementById('balance_amount').value;
+                const selectedCard = document.querySelector('input[name="payment_method"]:checked');
+                
+                if (!amount || amount < 10) {
+                    Swal.showValidationMessage('En az 10 ₺ eklemelisiniz');
+                    return false;
+                }
+                
+                if (!selectedCard) {
+                    Swal.showValidationMessage('Ödeme yöntemi seçiniz');
+                    return false;
+                }
+                
+                return {
+                    amount: amount,
+                    paymentMethod: selectedCard.value
+                };
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const data = result.value;
+                
+                // Bakiye ekleme işlemi
+                Swal.fire({
+                    title: 'Bakiye Ekleniyor...',
+                    html: 'Lütfen bekleyiniz...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                // AJAX ile bakiye ekleme isteği
+                const formData = new FormData();
+                formData.append('csrf_token', '{{.CSRFToken}}');
+                formData.append('amount', data.amount);
+                formData.append('payment_method', data.paymentMethod);
+                
+                fetch('/user/add-balance', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı!',
+                            text: `${data.amount} ₺ bakiyenize eklendi`,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: result.message || 'Bakiye eklenirken bir hata oluştu'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Hata!',
+                        text: 'Bakiye eklenirken bir hata oluştu'
+                    });
+                });
+            }
+        });
+    }
+</script>
+{{end}} 

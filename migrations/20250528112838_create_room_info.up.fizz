@@ -1,0 +1,17 @@
+create_table("room_info") {
+    t.Column("id", "integer", {primary: true})
+    t.Column("rooms_id", "integer", {})
+    t.Column("first_pic_url", "string", {"limit": 400})
+    t.Column("first_text", "string", {"limit": 400})
+    t.Column("first_tittle_fontawesome", "string", {"limit": 100})
+    t.Column("first_tittle", "string", {"limit": 50})
+    t.Column("first_tittle_text", "string", {"limit": 400})
+    t.Column("second_tittle_fontawesome", "string", {"limit": 100})
+    t.Column("second_tittle", "string", {"limit": 50})
+    t.Column("second_tittle_text", "string", {"limit": 400})
+    t.Column("third_tittle_fontawesome", "string", {"limit": 100})
+    t.Column("third_tittle", "string", {"limit": 50})
+    t.Column("third_tittle_text", "string", {"limit": 400})
+    t.Column("room_max_cap", "integer", {})
+    t.Column("room_daily_price", "integer", {})
+}

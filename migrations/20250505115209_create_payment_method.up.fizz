@@ -1,0 +1,11 @@
+create_table("payment_methods") {
+  t.Column("id", "integer", {primary: true})
+  t.Column("user_id", "integer", {})
+  t.Column("card_name", "string", {size: 255})
+  t.Column("last_four", "string", {size: 4})
+  t.Column("expiry_month", "integer", {})
+  t.Column("expiry_year", "integer", {})
+  t.Column("card_type", "string", {size: 20})
+  t.Column("created_at", "datetime", {})
+  t.Column("updated_at", "datetime", {})
+}

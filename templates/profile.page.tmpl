@@ -1,0 +1,152 @@
+{{template "base" .}}
+{{define "title"}}Profilim - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5 pt-5">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <div class="text-center mb-5">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h4 class="mt-3">{{with .Data.User}}{{.Firstname}} {{.LastName}}{{end}}</h4>
+                            <div class="mb-2">
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-wallet me-1"></i>{{with .Data.User}}{{.Balance}}{{end}} ₺
+                                </span>
+                            </div>
+                            <p class="text-muted">{{with .Data.User}}{{.Email}}{{end}}</p>
+                        </div>
+                        
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link active mb-2" href="/user/profile">
+                                <i class="fas fa-user me-2"></i>Profil Bilgileri
+                            </a>
+                            <a class="nav-link mb-2" href="/user/reservations">
+                                <i class="fas fa-calendar-check me-2"></i>Rezervasyonlarım
+                            </a>
+                            <a class="nav-link mb-2" href="/user/payments">
+                                <i class="fas fa-credit-card me-2"></i>Ödeme Bilgilerim
+                            </a>
+                            <a class="nav-link" href="/user/password">
+                                <i class="fas fa-lock me-2"></i>Şifre Değiştir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-user me-2"></i>Profil Bilgileri</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="profile-form" class="needs-validation" method="post" action="/user/profile" novalidate>
+                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="first_name" class="form-label">Adınız</label>
+                                    <input type="text" class="form-control {{with .Form.Errors.Get "first_name"}} is-invalid {{end}}" 
+                                        id="first_name" name="first_name" data-field-name="Ad"
+                                        value="{{with .Data.User}}{{.Firstname}}{{end}}" required>
+                                    <div class="invalid-feedback">
+                                        {{with .Form.Errors.Get "first_name"}}
+                                            {{.}}
+                                        {{else}}
+                                            Lütfen adınızı giriniz.
+                                        {{end}}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="last_name" class="form-label">Soyadınız</label>
+                                    <input type="text" class="form-control {{with .Form.Errors.Get "last_name"}} is-invalid {{end}}" 
+                                        id="last_name" name="last_name" data-field-name="Soyad"
+                                        value="{{with .Data.User}}{{.LastName}}{{end}}" required>
+                                    <div class="invalid-feedback">
+                                        {{with .Form.Errors.Get "last_name"}}
+                                            {{.}}
+                                        {{else}}
+                                            Lütfen soyadınızı giriniz.
+                                        {{end}}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Adresiniz</label>
+                                <input type="email" class="form-control" id="email" value="{{with .Data.User}}{{.Email}}{{end}}" disabled>
+                                <small class="text-muted">Email adresiniz değiştirilemez.</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Telefon Numaranız</label>
+                                <input type="tel" class="form-control {{with .Form.Errors.Get "phone"}} is-invalid {{end}}" 
+                                    id="phone" name="phone" data-field-name="Telefon"
+                                    value="{{with .Data.User}}{{.Phone}}{{end}}">
+                                <div class="invalid-feedback">
+                                    {{with .Form.Errors.Get "phone"}}
+                                        {{.}}
+                                    {{else}}
+                                        Lütfen geçerli bir telefon numarası giriniz.
+                                    {{end}}
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid d-md-flex justify-content-md-end">
+                                <button type="submit" id="profile-submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>Bilgileri Güncelle
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form doğrulama işlemleri
+        validateForm('profile-form', 'profile-submit');
+        
+        // Profil formu için bildirim
+        const profileForm = document.getElementById('profile-form');
+        if (profileForm) {
+            profileForm.addEventListener('submit', function(e) {
+                if (this.checkValidity()) {
+                    e.preventDefault();
+                    
+                    // Bildirim göster
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    });
+                    
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Profil bilgileriniz güncelleniyor...'
+                    });
+                    
+                    // Form gönder
+                    const form = this;
+                    setTimeout(function() {
+                        form.submit();
+                    }, 1500);
+                }
+            });
+        }
+    });
+</script>
+{{end}} 

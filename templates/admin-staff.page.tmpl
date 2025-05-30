@@ -1,0 +1,346 @@
+{{template "base" .}}
+{{define "title"}}Personel Yönetimi - Admin Paneli{{end}}
+{{define "content"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-md-3">
+                <!-- Admin Sidebar -->
+                <div class="list-group mb-4">
+                    <div class="card border-0 shadow">
+                    <div class="card-body ">
+                            <div class="text-center mb-5">
+                                <div class="profile-avatar bg-primary">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <h4 class="mt-3">{{with .Data.User}}{{.Firstname}} {{.LastName}}{{end}}</h4>
+                                <p class="text-muted">Admin Paneli</p>
+                            </div>
+                            
+                            <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                                <a class="nav-link mb-2" href="/admin/dashboard">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a>
+                                <a class="nav-link mb-2" href="/admin/reservations">
+                                    <i class="fas fa-calendar-check me-2"></i>Tüm Rezervasyonlar
+                                </a>
+                                <a class="nav-link mb-2" href="/admin/rooms">
+                                    <i class="fas fa-door-open me-2"></i>Odalar
+                                </a>
+                                <a class="nav-link mb-2" href="/admin/users">
+                                    <i class="fas fa-users me-2"></i>Kullanıcılar
+                                </a>
+                                <a class="nav-link active mb-2" href="/admin/staff">
+                                    <i class="fas fa-user-tie me-2"></i>Personel Yönetimi
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i> Personel Yönetimi</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="personel-tab" data-bs-toggle="tab" data-bs-target="#personel" type="button" role="tab" aria-controls="personel" aria-selected="true">Personel Listesi</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab" aria-controls="add" aria-selected="false">Personel Ekle</button>
+                            </li>
+                            {{if index .Data "StaffEdit"}}
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button" role="tab" aria-controls="edit" aria-selected="false">Personel Düzenle</button>
+                            </li>
+                            {{end}}
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <!-- Personel Listesi -->
+                            <div class="tab-pane fade {{if not (index .Data "StaffEdit")}}show active{{end}}" id="personel" role="tabpanel" aria-labelledby="personel-tab">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th scope="col">ID</th>
+                                                <th scope="col">Fotoğraf</th>
+                                                <th scope="col">İsim</th>
+                                                <th scope="col">Pozisyon</th>
+                                                <th scope="col">Email</th>
+                                                <th scope="col">Kat</th>
+                                                <th scope="col">İşlemler</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {{range $index, $staff := index .Data "Staff"}}
+                                            <tr>
+                                                <td>{{.ID}}</td>
+                                                <td>
+                                                    {{if eq .PhotoURL ""}}
+                                                        <img src="https://via.placeholder.com/50x50?text=Yok" class="rounded-circle" width="40" height="40" alt="{{.FirstName}}">
+                                                    {{else}}
+                                                        <img src="{{.PhotoURL}}" class="rounded-circle" width="40" height="40" alt="{{.FirstName}}" style="object-fit: cover;">
+                                                    {{end}}
+                                                </td>
+                                                <td>{{.FirstName}} {{.LastName}}</td>
+                                                <td>{{.StaffRank}}</td>
+                                                <td>{{.Email}}</td>
+                                                <td>{{.Floor}}</td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="/staff/{{.ID}}" target="_blank" class="btn btn-outline-primary" title="Görüntüle">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        <a href="/admin/staff/edit/{{.ID}}" class="btn btn-outline-secondary" title="Düzenle">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline-danger delete-btn" 
+                                                            data-id="{{.ID}}"
+                                                            data-name="{{.FirstName}} {{.LastName}}"
+                                                            title="Sil">
+                                                            <i class="fas fa-trash-alt"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {{else}}
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="alert alert-info mb-0">
+                                                        <i class="fas fa-info-circle me-2"></i>Henüz personel bulunmamaktadır.
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {{end}}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Personel Ekle -->
+                            <div class="tab-pane fade {{if not (index .Data "StaffEdit")}}{{if .Form.Errors.Get "first_name"}}show active{{end}}{{end}}" id="add" role="tabpanel" aria-labelledby="add-tab">
+                                <form action="/admin/staff/add" method="post" class="needs-validation" novalidate>
+                                    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="first_name" class="form-label">Ad <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control {{with .Form.Errors.Get "first_name"}}is-invalid{{end}}" id="first_name" name="first_name" value="{{with .Form.Get "first_name"}}{{.}}{{end}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with .Form.Errors.Get "first_name"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen adı giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="last_name" class="form-label">Soyad <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control {{with .Form.Errors.Get "last_name"}}is-invalid{{end}}" id="last_name" name="last_name" value="{{with .Form.Get "last_name"}}{{.}}{{end}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with .Form.Errors.Get "last_name"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen soyadı giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                            <input type="email" class="form-control {{with .Form.Errors.Get "email"}}is-invalid{{end}}" id="email" name="email" value="{{with .Form.Get "email"}}{{.}}{{end}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with .Form.Errors.Get "email"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen geçerli bir email adresi giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="phone" class="form-label">Telefon</label>
+                                            <input type="tel" class="form-control" id="phone" name="phone" value="{{with .Form.Get "phone"}}{{.}}{{end}}">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="staff_rank" class="form-label">Pozisyon <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control {{with .Form.Errors.Get "staff_rank"}}is-invalid{{end}}" id="staff_rank" name="staff_rank" value="{{with .Form.Get "staff_rank"}}{{.}}{{end}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with .Form.Errors.Get "staff_rank"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen pozisyon bilgisini giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="floor" class="form-label">Kat</label>
+                                            <input type="text" class="form-control" id="floor" name="floor" value="{{with .Form.Get "floor"}}{{.}}{{end}}">
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="bio" class="form-label">Biyografi</label>
+                                            <textarea class="form-control" id="bio" name="bio" rows="4">{{with .Form.Get "bio"}}{{.}}{{end}}</textarea>
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="photo_url" class="form-label">Fotoğraf URL'i</label>
+                                            <input type="url" class="form-control" id="photo_url" name="photo_url" placeholder="https://..." value="{{with .Form.Get "photo_url"}}{{.}}{{end}}">
+                                            <small class="form-text text-muted">Personel fotoğrafı için bir URL girin.</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-3">
+                                        <button type="reset" class="btn btn-outline-secondary me-2">Temizle</button>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Personel Ekle
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Personel Düzenle -->
+                            {{with index .Data "StaffEdit"}}
+                            <div class="tab-pane fade show active" id="edit" role="tabpanel" aria-labelledby="edit-tab">
+                                <form action="/admin/staff/update" method="post" class="needs-validation" novalidate>
+                                    <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+                                    <input type="hidden" name="staff_id" value="{{.ID}}">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_first_name" class="form-label">Ad <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control {{with $.Form.Errors.Get "first_name"}}is-invalid{{end}}" id="edit_first_name" name="first_name" value="{{.FirstName}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with $.Form.Errors.Get "first_name"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen adı giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_last_name" class="form-label">Soyad <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control {{with $.Form.Errors.Get "last_name"}}is-invalid{{end}}" id="edit_last_name" name="last_name" value="{{.LastName}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with $.Form.Errors.Get "last_name"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen soyadı giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_email" class="form-label">Email <span class="text-danger">*</span></label>
+                                            <input type="email" class="form-control {{with $.Form.Errors.Get "email"}}is-invalid{{end}}" id="edit_email" name="email" value="{{.Email}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with $.Form.Errors.Get "email"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen geçerli bir email adresi giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_phone" class="form-label">Telefon</label>
+                                            <input type="tel" class="form-control" id="edit_phone" name="phone" value="{{.Phone}}">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_staff_rank" class="form-label">Pozisyon <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control {{with $.Form.Errors.Get "staff_rank"}}is-invalid{{end}}" id="edit_staff_rank" name="staff_rank" value="{{.StaffRank}}" required>
+                                            <div class="invalid-feedback">
+                                                {{with $.Form.Errors.Get "staff_rank"}}
+                                                    {{.}}
+                                                {{else}}
+                                                    Lütfen pozisyon bilgisini giriniz.
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="edit_floor" class="form-label">Kat</label>
+                                            <input type="text" class="form-control" id="edit_floor" name="floor" value="{{.Floor}}">
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="edit_bio" class="form-label">Biyografi</label>
+                                            <textarea class="form-control" id="edit_bio" name="bio" rows="4">{{.Bio}}</textarea>
+                                        </div>
+                                        
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Mevcut Fotoğraf</label>
+                                            <div class="d-flex align-items-center">
+                                                {{if eq .PhotoURL ""}}
+                                                    <div class="bg-light text-center p-3 me-3" style="width: 100px; height: 100px;">
+                                                        <span class="text-muted">Fotoğraf yok</span>
+                                                    </div>
+                                                {{else}}
+                                                    <img src="{{.PhotoURL}}" alt="Mevcut fotoğraf" class="img-thumbnail me-3" style="width: 100px; height: 100px; object-fit: cover;">
+                                                {{end}}
+                                                <div>
+                                                    <p class="mb-1">Fotoğrafı değiştirmek için yeni bir URL girin.</p>
+                                                    <small class="text-muted">Değiştirmezseniz mevcut fotoğraf korunacaktır.</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="col-md-12 mb-3">
+                                            <label for="edit_photo_url" class="form-label">Fotoğraf URL'i</label>
+                                            <input type="url" class="form-control" id="edit_photo_url" name="photo_url" placeholder="https://..." value="{{.PhotoURL}}">
+                                            <small class="form-text text-muted">Personel fotoğrafı için bir URL girin.</small>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-end mt-3">
+                                        <a href="/admin/staff" class="btn btn-outline-secondary me-2">İptal</a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-save me-2"></i>Güncelle
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Silme Onay Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel"><i class="fas fa-exclamation-triangle me-2"></i>Personel Silme Onayı</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                </div>
+                <div class="modal-body">
+                    <p><span id="staffName"></span> isimli personeli silmek istediğinize emin misiniz?</p>
+                    <p class="text-danger mb-0"><small><i class="fas fa-info-circle me-1"></i>Bu işlem geri alınamaz.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <a href="#" id="confirmDelete" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i>Evet, Sil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Modal ile silme onayı
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const staffNameSpan = document.getElementById('staffName');
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+        
+        document.querySelectorAll('.delete-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                const staffId = this.getAttribute('data-id');
+                const staffName = this.getAttribute('data-name');
+                
+                staffNameSpan.textContent = staffName;
+                confirmDeleteBtn.href = `/admin/staff/delete/${staffId}`;
+                
+                deleteModal.show();
+            });
+        });
+    });
+</script>
+{{end}} 

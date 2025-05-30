@@ -1,0 +1,45 @@
+{{template "base" .}}
+{{define "title"}}Personellerimiz - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5">
+        <div class="row mb-4">
+            <div class="col">
+                <h1 class="text-center mb-4">Personellerimiz</h1>
+                <p class="lead text-center">Side Project Pansiyon'un değerli ekibi ile tanışın. Konforunuz için çalışan ekip arkadaşlarımız, sizlere en iyi hizmeti sunmak için buradalar.</p>
+            </div>
+        </div>
+
+        <div class="row">
+            {{range $index, $staff := index .Data "Staff"}}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="position-relative">
+                            {{if eq .PhotoURL ""}}
+                                <img src="https://via.placeholder.com/300x200?text=Fotoğraf+Yok" class="card-img-top" alt="{{.FirstName}} {{.LastName}} Fotoğrafı" style="height: 250px; object-fit: cover;">
+                            {{else}}
+                                <img src="{{.PhotoURL}}" class="card-img-top" alt="{{.FirstName}} {{.LastName}} Fotoğrafı" style="height: 250px; object-fit: cover;">
+                            {{end}}
+                            <div class="position-absolute bottom-0 start-0 bg-primary text-white px-3 py-1">
+                                {{.StaffRank}}
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{.FirstName}} {{.LastName}}</h5>
+                            <p class="card-text text-muted">
+                                <i class="fas fa-building me-2"></i>Kat: {{.Floor}}
+                            </p>
+                            <p class="card-text">{{if gt (len .Bio) 100}}{{slice .Bio 0 100}}...{{else}}{{.Bio}}{{end}}</p>
+                            <a href="/staff/{{.ID}}" class="btn btn-outline-primary">Detaylı Bilgi</a>
+                        </div>
+                    </div>
+                </div>
+            {{else}}
+                <div class="col-12 text-center py-5">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Henüz personel bilgisi bulunmamaktadır.
+                    </div>
+                </div>
+            {{end}}
+        </div>
+    </div>
+{{end}} 

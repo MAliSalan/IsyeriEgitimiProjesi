@@ -1,0 +1,1049 @@
+{{template "base" .}}
+{{define "title"}}Rezervasyon Detayı - Admin Panel - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5 pt-5">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <div class="text-center mb-5">
+                            <div class="profile-avatar bg-primary">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <h4 class="mt-3">{{with .Data.User}}{{.Firstname}} {{.LastName}}{{end}}</h4>
+                            <p class="text-muted">Admin Paneli</p>
+                        </div>
+                        
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link mb-2" href="/admin/dashboard">
+                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                            </a>
+                            <a class="nav-link active mb-2" href="/admin/reservations">
+                                <i class="fas fa-calendar-check me-2"></i>Tüm Rezervasyonlar
+                            </a>
+                            <a class="nav-link mb-2" href="/admin/rooms">
+                                <i class="fas fa-door-open me-2"></i>Odalar
+                            </a>
+                            <a class="nav-link mb-2" href="/admin/users">
+                                <i class="fas fa-users me-2"></i>Kullanıcılar
+                            </a>
+                            <a class="nav-link mb-2" href="/admin/staff">
+                                <i class="fas fa-user-tie me-2"></i>Personel Yönetimi
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Rezervasyon Detayları</h5>
+                        <a href="/admin/reservations" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Geri Dön
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {{with .Data.Reservation}}
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-3">Müşteri Bilgileri</h6>
+                                    <p><strong>Ad Soyad:</strong> {{.FirstName}} {{.LastName}}</p>
+                                    <p><strong>E-posta:</strong> {{.Email}}</p>
+                                    <p><strong>Telefon:</strong> {{if .Phone}}{{.Phone}}{{else}}<span class="badge bg-secondary">Girilmemiş</span>{{end}}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-3">Rezervasyon Bilgileri</h6>
+                                    <p><strong>Rezervasyon ID:</strong> {{.ID}}</p>
+                                    <p><strong>Oda:</strong> {{.Room.RoomName}}</p>
+                                    <p><strong>Oda ID:</strong> {{.RoomID}}</p>
+                                    <p>
+                                        <strong>Tarih Aralığı:</strong> 
+                                        {{index $.StringMap (printf "start_date_%d" .ID)}} - {{index $.StringMap (printf "end_date_%d" .ID)}}
+                                    </p>
+                                    <p>
+                                        <strong>Durum:</strong>
+                                        {{if eq .ReservationStatus "pending"}}
+                                            <span class="badge bg-warning">Onay Bekliyor</span>
+                                        {{else if eq .ReservationStatus "accepted"}}
+                                            <span class="badge bg-success">Onaylandı</span>
+                                        {{else if eq .ReservationStatus "rejected"}}
+                                            <span class="badge bg-danger">Reddedildi</span>
+                                        {{else}}
+                                            <span class="badge bg-secondary">{{.ReservationStatus}}</span>
+                                        {{end}}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="d-flex">
+                                        {{if eq .ReservationStatus "pending"}}
+                                            {{$paymentInfo := $.Data.PaymentInfo}}
+                                            {{if eq $paymentInfo.PaymentStatus "paid"}}
+                                                <button type="button" class="btn btn-success me-2" onclick="confirmApprove('{{.ID}}')">
+                                                    <i class="fas fa-check me-1"></i> Onayla
+                                                </button>
+                                            {{else}}
+                                                <button type="button" class="btn btn-success me-2" disabled title="Önce ödeme yapılmalıdır">
+                                                    <i class="fas fa-check me-1"></i> Onayla
+                                                </button>
+                                                <div class="alert alert-warning mb-0 me-2" style="padding: 8px 12px; font-size: 0.875rem;">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                                    Rezervasyon onaylanabilmesi için önce ödeme yapılmalıdır.
+                                                </div>
+                                            {{end}}
+                                            <button type="button" class="btn btn-danger" onclick="confirmReject('{{.ID}}')">
+                                                <i class="fas fa-times me-1"></i> Reddet
+                                            </button>
+                                        {{else}}
+                                            <div class="alert alert-info mb-0">
+                                                <i class="fas fa-info-circle me-1"></i> Bu rezervasyon için işlem yapılamaz çünkü durumu şu anda: 
+                                                {{if eq .ReservationStatus "accepted"}}
+                                                    <span class="badge bg-success">Onaylandı</span>
+                                                {{else if eq .ReservationStatus "rejected"}}
+                                                    <span class="badge bg-danger">Reddedildi</span>
+                                                {{end}}
+                                            </div>
+                                        {{end}}
+                                    </div>
+                                </div>
+                            </div>
+                        {{end}}
+                    </div>
+                </div>
+
+                <!-- Ödeme Bilgileri Kartı -->
+                {{with .Data.PaymentInfo}}
+                <div class="card border-0 shadow mb-4">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Ödeme Bilgileri</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Toplam Tutar</small>
+                                <strong class="fs-5 text-primary">
+                                    {{if gt .TotalAmount 0}}
+                                        {{.TotalAmount}} ₺
+                                    {{else}}
+                                        <span class="text-muted">Belirlenmemiş</span>
+                                    {{end}}
+                                </strong>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Ödeme Yöntemi</small>
+                                <div class="d-flex align-items-center">
+                                    {{if eq .PaymentMethod "card"}}
+                                        <i class="fas fa-credit-card text-primary me-2"></i>
+                                        <span>Kredi Kartı</span>
+                                    {{else if eq .PaymentMethod "balance"}}
+                                        <i class="fas fa-wallet text-info me-2"></i>
+                                        <span>Bakiye</span>
+                                    {{else if eq .PaymentMethod "later"}}
+                                        <i class="fas fa-clock text-warning me-2"></i>
+                                        <span>Daha Sonra</span>
+                                    {{else if eq .PaymentMethod "unknown"}}
+                                        <i class="fas fa-question-circle text-muted me-2"></i>
+                                        <span class="text-muted">Henüz ödeme yapılmadı</span>
+                                    {{else if eq .PaymentMethod ""}}
+                                        <i class="fas fa-question-circle text-muted me-2"></i>
+                                        <span class="text-muted">Henüz ödeme yapılmadı</span>
+                                    {{else}}
+                                        <i class="fas fa-question-circle text-muted me-2"></i>
+                                        <span class="text-muted">Belirlenmemiş</span>
+                                    {{end}}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Ödeme Durumu</small>
+                                {{if eq .PaymentStatus "paid"}}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle me-1"></i>Ödendi
+                                    </span>
+                                {{else if eq .PaymentStatus "pending"}}
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock me-1"></i>Beklemede
+                                    </span>
+                                {{else if eq .PaymentStatus "failed"}}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times-circle me-1"></i>Başarısız
+                                    </span>
+                                {{else if eq .PaymentStatus "unknown"}}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-question-circle me-1"></i>Henüz ödeme yapılmadı
+                                    </span>
+                                {{else if eq .PaymentStatus ""}}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-question-circle me-1"></i>Henüz ödeme yapılmadı
+                                    </span>
+                                {{else}}
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-question-circle me-1"></i>Bilinmiyor
+                                    </span>
+                                {{end}}
+                            </div>
+                            
+                            {{if .PaymentDate}}
+                            <div class="col-md-3">
+                                <small class="text-muted d-block">Ödeme Tarihi</small>
+                                <small class="text-dark">{{.PaymentDate.Format "02.01.2006 15:04"}}</small>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+                
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Rezervasyon Tarihini Düzenle</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-12 mb-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h6 class="mb-0">Mevcut Tarih: <span class="text-primary">{{index .StringMap "start_date"}} - {{index .StringMap "end_date"}}</span></h6>
+                                    <button type="button" id="edit-dates-btn" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit me-1"></i>Tarihleri Düzenle
+                                    </button>
+                                </div>
+                                <div class="text-muted small mb-3">
+                                    <i class="fas fa-info-circle me-1"></i>Aşağıdaki takvimde:
+                                    <ul class="mt-1 ps-3">
+                                        <li><span class="badge bg-primary">K</span> ile işaretli günler bu rezervasyonun mevcut tarihlerini gösterir.</li>
+                                        <li><span class="badge bg-danger">O</span> ile işaretli günler aynı odanın başka kişi veya kişiler tarafından alınmıştır ve seçilemez.</li>
+                                    </ul>
+                                </div>
+                                
+                                <div id="reservation-calendar" class="border rounded p-3"
+                                    data-reservation-id="{{.Data.Reservation.ID}}"
+                                    data-room-id="{{.Data.Reservation.RoomID}}"
+                                    data-start-date="{{index .StringMap "start_date"}}"
+                                    data-end-date="{{index .StringMap "end_date"}}"
+                                    data-reservations='{{index .StringMap "reservations_json"}}'>
+                                    <!-- Takvim burada gösterilecek -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <form id="update-reservation-form" action="/admin/reservations/update" method="post">
+                            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                            <input type="hidden" name="reservation_id" value="{{.Data.Reservation.ID}}">
+                            <input type="hidden" name="start_date" id="start_date" value="">
+                            <input type="hidden" name="end_date" id="end_date" value="">
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" id="save-dates-btn" class="btn btn-success" disabled>
+                                    <i class="fas fa-save me-1"></i>Değişiklikleri Kaydet
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    // Onaylama işlemi için onay popup'ı
+    function confirmApprove(reservationId) {
+        Swal.fire({
+            title: 'Rezervasyonu onaylamak istediğinizden emin misiniz?',
+            text: "Bu işlem müşteriye onay e-postası gönderecek.",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Evet, Onayla',
+            cancelButtonText: 'İptal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/admin/reservations/${reservationId}/status/accepted`;
+            }
+        });
+    }
+    
+    // Reddetme işlemi için onay popup'ı
+    function confirmReject(reservationId) {
+        Swal.fire({
+            title: 'Rezervasyonu reddetmek istediğinizden emin misiniz?',
+            text: "Bu işlem müşteriye bilgilendirme e-postası gönderecek.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Evet, Reddet',
+            cancelButtonText: 'İptal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/admin/reservations/${reservationId}/status/rejected`;
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Rezervasyon değişkenlerini data attribute'lardan al
+        const calendarContainer = document.getElementById('reservation-calendar');
+        
+        console.log("Takvim oluşturuluyor...");
+        
+        // Gerekli verileri al
+        const reservationId = parseInt(calendarContainer.dataset.reservationId);
+        const roomId = parseInt(calendarContainer.dataset.roomId);
+        const currentStartDate = new Date(calendarContainer.dataset.startDate);
+        const currentEndDate = new Date(calendarContainer.dataset.endDate);
+        
+        console.log("Rezervasyon ID:", reservationId);
+        console.log("Oda ID:", roomId);
+        console.log("Başlangıç Tarihi:", currentStartDate);
+        console.log("Bitiş Tarihi:", currentEndDate);
+        
+        // Takvim için kullanılacak tüm rezervasyon tarihleri
+        let reservations = [];
+        try {
+            const reservationsData = calendarContainer.dataset.reservations;
+            console.log("Rezervasyon JSON data:", reservationsData);
+            reservations = JSON.parse(reservationsData);
+            console.log("Rezervasyonlar başarıyla ayrıştırıldı:", reservations);
+        } catch (e) {
+            console.error("Rezervasyon verisi ayrıştırılamadı:", e);
+        }
+        
+        // Takvimi oluştur
+        const calendar = createReservationCalendar(
+            'reservation-calendar', 
+            currentStartDate, 
+            currentEndDate, 
+            reservations,
+            reservationId,
+            roomId
+        );
+        
+        // Düzenleme butonuna tıklandığında
+        document.getElementById('edit-dates-btn').addEventListener('click', function() {
+            console.log("Tarihleri Düzenle butonuna tıklandı");
+            // Takvimde seçim yapılabilir olsun
+            calendar.enableDateSelection();
+            // Kaydet butonu aktif olsun
+            document.getElementById('save-dates-btn').removeAttribute('disabled');
+            // Bu buton devre dışı kalsın
+            this.setAttribute('disabled', 'disabled');
+        });
+        
+        // Form gönderildiğinde
+        document.getElementById('update-reservation-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const selectedDates = calendar.getSelectedDates();
+            console.log("Seçilen tarihler:", selectedDates);
+            
+            if (!selectedDates || selectedDates.length !== 2) {
+                Swal.fire({
+                    title: 'Hata',
+                    text: 'Lütfen başlangıç ve bitiş tarihlerini seçin.',
+                    icon: 'error'
+                });
+                return;
+            }
+            
+            // Seçilen tarihler başka rezervasyonlarla çakışıyor mu kontrol et
+            if (calendar.hasConflicts(selectedDates[0], selectedDates[1])) {
+                Swal.fire({
+                    title: 'Çakışma Tespit Edildi',
+                    text: 'Seçtiğiniz tarihler başka rezervasyonlarla çakışıyor. Lütfen farklı tarihler seçin.',
+                    icon: 'warning'
+                });
+                return;
+            }
+            
+            // Form alanlarını güncelle
+            const startDateStr = formatDate(selectedDates[0]);
+            const endDateStr = formatDate(selectedDates[1]);
+            
+            console.log("Form'a yazılacak başlangıç tarihi:", startDateStr);
+            console.log("Form'a yazılacak bitiş tarihi:", endDateStr);
+            
+            document.getElementById('start_date').value = startDateStr;
+            document.getElementById('end_date').value = endDateStr;
+            
+            // Onay iste
+            Swal.fire({
+                title: 'Rezervasyon Tarihlerini Güncelle',
+                html: `Rezervasyonu aşağıdaki tarihlerle güncellemek istediğinizden emin misiniz?<br>
+                      <strong>Başlangıç:</strong> ${formatDateDisplay(selectedDates[0])}<br>
+                      <strong>Bitiş:</strong> ${formatDateDisplay(selectedDates[1])}`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Evet, Güncelle',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    console.log("Onaylandı, form gönderiliyor...");
+                    console.log("Form verileri:", {
+                        reservation_id: document.querySelector('input[name="reservation_id"]').value,
+                        csrf_token: document.querySelector('input[name="csrf_token"]').value,
+                        start_date: document.getElementById('start_date').value,
+                        end_date: document.getElementById('end_date').value
+                    });
+                    this.submit();
+                }
+            });
+        });
+        
+        // Tarih formatlama yardımcı fonksiyonu (YYYY-MM-DD)
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Görüntülenecek tarih formatı (DD.MM.YYYY)
+        function formatDateDisplay(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+    });
+    
+    // Rezervasyon takvimi oluşturma fonksiyonu
+    function createReservationCalendar(containerId, currentStart, currentEnd, allReservations, currentReservationId, currentRoomId) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error("Takvim container'ı bulunamadı:", containerId);
+            return {
+                enableDateSelection: function() {},
+                getSelectedDates: function() { return []; },
+                hasConflicts: function() { return false; }
+            };
+        }
+        
+        console.log("Takvim oluşturma başladı: ", containerId);
+        console.log("Mevcut rezervasyon: ", currentReservationId, currentRoomId);
+        console.log("Tarih aralığı: ", currentStart, currentEnd);
+        
+        let selectedDates = [new Date(currentStart), new Date(currentEnd)];
+        let selectionEnabled = false;
+        let selectionStep = 0; // 0: henüz seçim yok, 1: ilk tarih seçildi ve kilitlendi, 2: ikinci tarih seçildi
+        let lockedStartDate = null; // Kilitlenmiş başlangıç tarihi
+        
+        // Görüntülenecek ayların başlangıç tarihini belirle
+        // Varsayılan olarak rezervasyon başlangıç tarihinden başla
+        let viewStartMonth = new Date(currentStart.getFullYear(), currentStart.getMonth(), 1);
+        
+        // Navigasyon butonları ve ay gösterimi için konteyner oluştur
+        function createNavigation() {
+            const navContainer = document.createElement('div');
+            navContainer.className = 'calendar-navigation d-flex justify-content-between align-items-center mb-4';
+            
+            // Önceki 3 ay butonu
+            const prevButton = document.createElement('button');
+            prevButton.className = 'btn btn-outline-primary btn-sm';
+            prevButton.innerHTML = '<i class="fas fa-chevron-left"></i> Önceki Aylar';
+            prevButton.addEventListener('click', function() {
+                viewStartMonth = new Date(viewStartMonth.getFullYear(), viewStartMonth.getMonth() - 3, 1);
+                renderCalendar();
+            });
+            
+            // Mevcut tarih aralığı
+            const currentMonthDisplay = document.createElement('h6');
+            currentMonthDisplay.className = 'mb-0';
+            
+            // Sonraki 3 ay butonu
+            const nextButton = document.createElement('button');
+            nextButton.className = 'btn btn-outline-primary btn-sm';
+            nextButton.innerHTML = 'Sonraki Aylar <i class="fas fa-chevron-right"></i>';
+            nextButton.addEventListener('click', function() {
+                viewStartMonth = new Date(viewStartMonth.getFullYear(), viewStartMonth.getMonth() + 3, 1);
+                renderCalendar();
+            });
+            
+            navContainer.appendChild(prevButton);
+            navContainer.appendChild(currentMonthDisplay);
+            navContainer.appendChild(nextButton);
+            
+            return { navContainer, currentMonthDisplay };
+        }
+        
+        // Bilgi mesajını göster
+        function showSelectionStatus() {
+            const statusElem = document.getElementById('calendar-selection-status');
+            if (!statusElem) {
+                const statusDiv = document.createElement('div');
+                statusDiv.id = 'calendar-selection-status';
+                statusDiv.className = 'alert mt-3 text-center';
+
+                if (selectionStep === 0) {
+                    statusDiv.className += ' alert-info';
+                    statusDiv.innerHTML = '<i class="fas fa-info-circle me-2"></i>Lütfen <strong>başlangıç tarihini</strong> seçin.';
+                } else if (selectionStep === 1) {
+                    statusDiv.className += ' alert-success';
+                    const formattedDate = formatDateDisplay(lockedStartDate);
+                    statusDiv.innerHTML = `<i class="fas fa-check-circle me-2"></i>Başlangıç tarihi: <strong>${formattedDate}</strong>. Şimdi <strong>bitiş tarihini</strong> seçin.`;
+                } else if (selectionStep === 2) {
+                    statusDiv.className += ' alert-success';
+                    statusDiv.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Seçilen Tarih Aralığı:</strong> 
+                        ${formatDateDisplay(selectedDates[0])} - ${formatDateDisplay(selectedDates[1])}
+                    `;
+                }
+
+                container.appendChild(statusDiv);
+            } else {
+                if (selectionStep === 0) {
+                    statusElem.className = 'alert alert-info mt-3 text-center';
+                    statusElem.innerHTML = '<i class="fas fa-info-circle me-2"></i>Lütfen <strong>başlangıç tarihini</strong> seçin.';
+                } else if (selectionStep === 1) {
+                    statusElem.className = 'alert alert-success mt-3 text-center';
+                    const formattedDate = formatDateDisplay(lockedStartDate);
+                    statusElem.innerHTML = `<i class="fas fa-check-circle me-2"></i>Başlangıç tarihi: <strong>${formattedDate}</strong>. Şimdi <strong>bitiş tarihini</strong> seçin.`;
+                } else if (selectionStep === 2) {
+                    statusElem.className = 'alert alert-success mt-3 text-center';
+                    statusElem.innerHTML = `
+                        <i class="fas fa-check-circle me-2"></i>
+                        <strong>Seçilen Tarih Aralığı:</strong> 
+                        ${formatDateDisplay(selectedDates[0])} - ${formatDateDisplay(selectedDates[1])}
+                    `;
+                }
+            }
+        }
+        
+        // Tarih formatını görüntüleme için yardımcı fonksiyon
+        function formatDateDisplay(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}`;
+        }
+        
+        // Takvim UI'sını oluştur
+        function renderCalendar() {
+            console.log("Takvim render ediliyor...");
+            // Container'ı temizle
+            container.innerHTML = '';
+            
+            // Navigasyon oluştur
+            const { navContainer, currentMonthDisplay } = createNavigation();
+            container.appendChild(navContainer);
+            
+            // 3 aylık görünüm için row oluştur
+            const calendarRow = document.createElement('div');
+            calendarRow.className = 'row';
+            container.appendChild(calendarRow);
+            
+            // Görüntülenecek ayların başlangıç ve bitiş aylarını belirle
+            const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                              'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            
+            // Navigasyon bar'da gösterilecek tarih aralığını güncelle
+            const startMonthName = monthNames[viewStartMonth.getMonth()];
+            const endMonthName = monthNames[(viewStartMonth.getMonth() + 2) % 12];
+            const startYear = viewStartMonth.getFullYear();
+            const endYear = (viewStartMonth.getMonth() + 2) >= 12 ? startYear + 1 : startYear;
+            
+            currentMonthDisplay.textContent = `${startMonthName} ${startYear} - ${endMonthName} ${endYear}`;
+            
+            // 3 aylık takvimi göster
+            for (let i = 0; i < 3; i++) {
+                const monthToShow = new Date(viewStartMonth.getFullYear(), viewStartMonth.getMonth() + i, 1);
+                const monthCol = document.createElement('div');
+                monthCol.className = 'col-md-4';
+                
+                const monthElement = createMonthCalendar(monthToShow);
+                monthCol.appendChild(monthElement);
+                calendarRow.appendChild(monthCol);
+            }
+            
+            // Seçim durumunu göster
+            if (selectionEnabled) {
+                showSelectionStatus();
+            }
+            
+            console.log("Takvim render edildi");
+        }
+        
+        // Belirli bir ay için takvim oluştur
+        function createMonthCalendar(date) {
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'calendar-month mb-4';
+            
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            
+            // Ay adları
+            const monthNames = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 
+                               'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+            
+            // Ay başlığı
+            const monthHeader = document.createElement('div');
+            monthHeader.className = 'text-center mb-3';
+            monthHeader.innerHTML = `<h5>${monthNames[month]} ${year}</h5>`;
+            monthDiv.appendChild(monthHeader);
+            
+            // Haftanın günleri
+            const weekdaysDiv = document.createElement('div');
+            weekdaysDiv.className = 'd-flex mb-2';
+            const weekdays = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+            
+            weekdays.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-weekday';
+                dayDiv.textContent = day;
+                weekdaysDiv.appendChild(dayDiv);
+            });
+            
+            monthDiv.appendChild(weekdaysDiv);
+            
+            // Takvim günlerini oluştur
+            const calendarDays = document.createElement('div');
+            calendarDays.className = 'calendar-days';
+            
+            // Ayın ilk gününün haftanın hangi günü olduğunu bul
+            const firstDay = new Date(year, month, 1).getDay();
+            // JavaScript'te Pazar 0, bizim takvimimizdeki Pazartesi 0 olmalı
+            const firstDayAdjusted = firstDay === 0 ? 6 : firstDay - 1;
+            
+            // Önceki ayın son günlerini ekle
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            for (let i = 0; i < firstDayAdjusted; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day inactive';
+                dayDiv.textContent = daysInPrevMonth - firstDayAdjusted + i + 1;
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            // Bu ayın günlerini ekle
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            for (let i = 1; i <= daysInMonth; i++) {
+                const currentDate = new Date(year, month, i);
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day';
+                dayDiv.textContent = i;
+                
+                // Bugün ise vurgula
+                if (isToday(currentDate)) {
+                    dayDiv.classList.add('today');
+                }
+                
+                // Mevcut rezervasyona ait mi kontrol et
+                if (isDateInRange(currentDate, new Date(currentStart), new Date(currentEnd))) {
+                    dayDiv.classList.add('current-reservation');
+                    dayDiv.innerHTML += '<span class="reservation-badge user-badge">K</span>';
+                }
+                
+                // Başka rezervasyonlara ait mi kontrol et (sadece aynı oda için)
+                if (isDateBooked(currentDate, allReservations)) {
+                    dayDiv.classList.add('other-reservation');
+                    if (!isDateInRange(currentDate, new Date(currentStart), new Date(currentEnd))) {
+                        dayDiv.innerHTML += '<span class="reservation-badge other-badge">O</span>';
+                    }
+                }
+                
+                // Eğer adım 1'deyse ve bu tarih başlangıç tarihi ise, vurgula
+                if (selectionStep === 1 && isSameDay(currentDate, lockedStartDate)) {
+                    dayDiv.classList.add('selected', 'locked-date');
+                    dayDiv.innerHTML += '<span class="lock-badge"><i class="fas fa-lock"></i></span>';
+                }
+                
+                // Eğer adım 2'deyse ve tarih seçilen aralıktaysa, vurgula
+                if (selectionStep === 2 && selectedDates.length === 2) {
+                    if (isDateInRange(currentDate, selectedDates[0], selectedDates[1])) {
+                        dayDiv.classList.add('selected', 'date-in-range');
+                    }
+                }
+                
+                // Tarih seçme olayını ekle
+                if (selectionEnabled) {
+                    // Eğer bu başka bir rezervasyon tarihiyse ve mevcut rezervasyonun parçası değilse, seçilemesin
+                    const isOtherReservation = isDateBooked(currentDate, allReservations, true);
+                    const isCurrentReservation = isDateInRange(currentDate, new Date(currentStart), new Date(currentEnd));
+                    
+                    if (!isOtherReservation || isCurrentReservation) {
+                        dayDiv.classList.add('selectable');
+                        
+                        dayDiv.addEventListener('click', function() {
+                            console.log("Tarih seçildi: ", currentDate);
+                            handleDateSelection(currentDate, this);
+                        });
+                    }
+                }
+                
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            // Sonraki ayın ilk günlerini ekle
+            const totalCalendarDays = 42; // 6 satır x 7 gün
+            const daysFromNextMonth = totalCalendarDays - (firstDayAdjusted + daysInMonth);
+            
+            for (let i = 1; i <= daysFromNextMonth; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'calendar-day inactive';
+                dayDiv.textContent = i;
+                calendarDays.appendChild(dayDiv);
+            }
+            
+            monthDiv.appendChild(calendarDays);
+            return monthDiv;
+        }
+        
+        // İki tarih aynı gün mü kontrol et
+        function isSameDay(date1, date2) {
+            return date1.getDate() === date2.getDate() &&
+                   date1.getMonth() === date2.getMonth() &&
+                   date1.getFullYear() === date2.getFullYear();
+        }
+        
+        // Adım adım tarih seçim işlemi
+        function handleDateSelection(date, element) {
+            console.log("Tarih seçim işlemi: ", date, "Adım:", selectionStep);
+            
+            if (selectionStep === 0) {
+                // İlk tarih seçiliyor
+                Swal.fire({
+                    title: 'Başlangıç Tarihi',
+                    html: `<strong>${formatDateDisplay(date)}</strong> tarihini başlangıç tarihi olarak ayarlamak istiyor musunuz?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Evet, Kilitle',
+                    cancelButtonText: 'İptal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Başlangıç tarihini kilitle
+                        selectionStep = 1;
+                        lockedStartDate = new Date(date);
+                        selectedDates[0] = lockedStartDate;
+                        
+                        console.log("Başlangıç tarihi kilitlendi:", lockedStartDate);
+                        
+                        // Takvimi yeniden çiz
+                        renderCalendar();
+                    }
+                });
+            } else if (selectionStep === 1) {
+                // İkinci tarih seçiliyor
+                const startTime = lockedStartDate.getTime();
+                const endTime = date.getTime();
+                
+                // Bitiş tarihi başlangıç tarihinden önce mi kontrol et
+                if (endTime < startTime) {
+                    Swal.fire({
+                        title: 'Geçersiz Tarih Seçimi',
+                        text: 'Bitiş tarihi başlangıç tarihinden önce olamaz!',
+                        icon: 'error',
+                        confirmButtonText: 'Tamam'
+                    });
+                    return;
+                }
+                
+                Swal.fire({
+                    title: 'Bitiş Tarihi',
+                    html: `<strong>${formatDateDisplay(date)}</strong> tarihini bitiş tarihi olarak ayarlamak istiyor musunuz?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Evet',
+                    cancelButtonText: 'İptal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Bitiş tarihini ayarla
+                        selectionStep = 2;
+                        selectedDates[1] = new Date(date);
+                        
+                        console.log("Bitiş tarihi ayarlandı:", selectedDates[1]);
+                        console.log("Seçilen tarih aralığı:", selectedDates);
+                        
+                        // Takvimi yeniden çiz - aralığı göstermek için
+                        renderCalendar();
+                        
+                        // Tarih aralığı seçildi mesajı göster
+                        Swal.fire({
+                            title: 'Tarih Aralığı Seçildi',
+                            html: `
+                                Seçilen tarih aralığı:<br>
+                                <strong>Başlangıç:</strong> ${formatDateDisplay(selectedDates[0])}<br>
+                                <strong>Bitiş:</strong> ${formatDateDisplay(selectedDates[1])}
+                            `,
+                            icon: 'success',
+                            confirmButtonText: 'Tamam'
+                        }).then(() => {
+                            // SweetAlert onaylandıktan sonra seçilen tarih bilgisi görünür kalsın
+                            updateDateRangeSummary();
+                        });
+                    }
+                });
+            }
+        }
+        
+        // Seçilen tarih aralığı özeti güncelle/göster
+        function updateDateRangeSummary() {
+            // Mevcut özet alanını kontrol et
+            let summaryElem = document.getElementById('selected-date-range-summary');
+            
+            if (!summaryElem) {
+                // Eğer mevcut değilse oluştur
+                summaryElem = document.createElement('div');
+                summaryElem.id = 'selected-date-range-summary';
+                summaryElem.className = 'alert alert-success mt-3';
+                container.parentNode.insertBefore(summaryElem, container.nextSibling);
+            }
+            
+            if (selectionStep === 2 && selectedDates.length === 2) {
+                // Tarih bilgilerini formatla
+                const startFormatted = formatDateDisplay(selectedDates[0]);
+                const endFormatted = formatDateDisplay(selectedDates[1]);
+                
+                // Özet alanını güncelle
+                summaryElem.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">Seçilen Tarih Aralığı</h5>
+                            <div class="d-flex gap-3">
+                                <div>
+                                    <i class="fas fa-calendar-day me-1"></i>
+                                    <strong>Başlangıç:</strong> ${startFormatted}
+                                </div>
+                                <div>
+                                    <i class="fas fa-calendar-day me-1"></i>
+                                    <strong>Bitiş:</strong> ${endFormatted}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Form alanlarını güncelle
+                document.getElementById('start_date').value = formatDate(selectedDates[0]);
+                document.getElementById('end_date').value = formatDate(selectedDates[1]);
+                
+                // Kaydet butonu aktifleştir
+                document.getElementById('save-dates-btn').removeAttribute('disabled');
+            }
+        }
+        
+        // Tarih bugün mü kontrol et
+        function isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        }
+        
+        // Tarih belirtilen aralıkta mı kontrol et
+        function isDateInRange(date, start, end) {
+            const dateTs = new Date(date).setHours(0,0,0,0);
+            const startTs = new Date(start).setHours(0,0,0,0);
+            const endTs = new Date(end).setHours(0,0,0,0);
+            return dateTs >= startTs && dateTs <= endTs;
+        }
+        
+        // Tarih rezerve edilmiş mi kontrol et - sadece aynı odadaki rezervasyonlar için
+        function isDateBooked(date, reservations, excludeCurrentReservation = false) {
+            if (!reservations || !Array.isArray(reservations)) {
+                return false;
+            }
+            
+            const dateTime = new Date(date).setHours(0,0,0,0);
+            
+            // Sadece aynı odadaki rezervasyonları kontrol et
+            return reservations.some(res => {
+                // Farklı odadaki rezervasyonlar için kontrolü atla
+                if (res.room_id !== currentRoomId) {
+                    return false;
+                }
+                
+                // Mevcut rezervasyonu kontrol dışı bırak (istenirse)
+                if (excludeCurrentReservation && res.id === currentReservationId) {
+                    return false;
+                }
+                
+                try {
+                    const resStart = new Date(res.start_date).setHours(0,0,0,0);
+                    const resEnd = new Date(res.end_date).setHours(0,0,0,0);
+                    return dateTime >= resStart && dateTime <= resEnd;
+                } catch (e) {
+                    console.error("Rezervasyon tarih karşılaştırmasında hata: ", e, res);
+                    return false;
+                }
+            });
+        }
+        
+        // Seçilen tarihler ile mevcut rezervasyonlar arasında çakışma var mı kontrol et
+        function hasDateConflicts(start, end) {
+            if (!allReservations || !Array.isArray(allReservations)) {
+                return false;
+            }
+            
+            const startTime = new Date(start).setHours(0,0,0,0);
+            const endTime = new Date(end).setHours(0,0,0,0);
+            
+            return allReservations.some(res => {
+                // Farklı odadaki rezervasyonlar için kontrolü atla
+                if (res.room_id !== currentRoomId) {
+                    return false;
+                }
+                
+                // Kendi rezervasyonumuz hariç
+                if (res.id === currentReservationId) {
+                    return false;
+                }
+                
+                try {
+                    const resStart = new Date(res.start_date).setHours(0,0,0,0);
+                    const resEnd = new Date(res.end_date).setHours(0,0,0,0);
+                    
+                    // Çakışma kontrolü
+                    return (startTime <= resEnd && endTime >= resStart);
+                } catch (e) {
+                    console.error("Çakışma kontrolünde hata: ", e, res);
+                    return false;
+                }
+            });
+        }
+        
+        // Takvimi başlat
+        renderCalendar();
+        
+        // Dışa açılan API
+        return {
+            enableDateSelection: function() {
+                console.log("Tarih seçimi aktifleştiriliyor");
+                selectionEnabled = true;
+                selectionStep = 0; // Seçim adımını sıfırla
+                selectedDates = []; // Seçilen tarihleri temizle
+                renderCalendar(); // Seçilebilir günler için takvimi yeniden çiz
+            },
+            getSelectedDates: function() {
+                console.log("Seçili tarihler alınıyor: ", selectedDates);
+                return selectedDates.length === 2 ? selectedDates : null;
+            },
+            hasConflicts: function(start, end) {
+                console.log("Çakışma kontrolü yapılıyor: ", start, end);
+                return hasDateConflicts(start, end);
+            }
+        };
+    }
+</script>
+
+<style>
+    /* Takvim stilleri */
+    .calendar-month {
+        margin-bottom: 20px;
+    }
+    
+    .calendar-weekday {
+        flex: 1;
+        text-align: center;
+        font-weight: bold;
+    }
+    
+    .calendar-days {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-gap: 5px;
+    }
+    
+    .calendar-day {
+        position: relative;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        cursor: default;
+    }
+    
+    .calendar-day.inactive {
+        color: #c6c6c6;
+        background-color: #f8f9fa;
+    }
+    
+    .calendar-day.today {
+        font-weight: bold;
+        background-color: #f0f8ff;
+    }
+    
+    .calendar-day.current-reservation {
+        background-color: rgba(0, 123, 255, 0.1);
+        border-color: #007bff;
+    }
+    
+    .calendar-day.other-reservation {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-color: #dc3545;
+    }
+    
+    .calendar-day.selectable {
+        cursor: pointer;
+        border: 2px dashed #28a745;
+    }
+    
+    .calendar-day.selectable:hover {
+        background-color: rgba(40, 167, 69, 0.1);
+    }
+    
+    .calendar-day.selected {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+    }
+    
+    .calendar-day.locked-date {
+        border: 2px solid #007bff;
+    }
+    
+    .calendar-day.date-in-range {
+        background-color: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+    
+    .lock-badge {
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+        font-size: 10px;
+        color: #007bff;
+    }
+    
+    .reservation-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        font-size: 10px;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+        text-align: center;
+        border-radius: 50%;
+        color: white;
+    }
+    
+    .user-badge {
+        background-color: #007bff;
+    }
+    
+    .other-badge {
+        background-color: #dc3545;
+    }
+    
+    .calendar-navigation {
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 15px;
+    }
+    
+    #selected-date-range-summary {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+</style>
+{{end}}

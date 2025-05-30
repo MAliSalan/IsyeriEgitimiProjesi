@@ -1,0 +1,175 @@
+{{template "base" .}}
+{{define "title"}}Rezervasyon Özeti - Side Project Pansiyon{{end}}
+{{define "content"}}
+    {{$res := index .Data "reservation"}}
+    {{$roomInfo := index .Data "room_info"}}
+    {{$totalDays := index .Data "total_days"}}
+    {{$totalAmount := index .Data "total_amount"}}
+    {{$paymentInfo := index .Data "payment_info"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-body p-5">
+                        <h1 class="card-title text-center mb-4">Rezervasyon Özeti</h1>
+                        
+                        <div class="alert alert-success mb-4">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Rezervasyonunuz başarıyla oluşturuldu!
+                        </div>
+
+                        <div class="row">
+                            <!-- Sol Kolon - Rezervasyon Bilgileri -->
+                            <div class="col-md-8">
+                                <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i>Rezervasyon Bilgileri</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <tbody>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Ad Soyad</th>
+                                                <td>{{$res.FirstName}} {{$res.LastName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Oda</th>
+                                                <td>{{$res.Room.RoomName}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Oda Kapasitesi</th>
+                                                <td>
+                                                    <span class="badge bg-info">
+                                                        <i class="fas fa-users me-1"></i>{{$roomInfo.RoomMaxCap}} Kişi
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Giriş Tarihi</th>
+                                                <td>{{index .StringMap "display_start_date"}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Çıkış Tarihi</th>
+                                                <td>{{index .StringMap "display_end_date"}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Konaklama Süresi</th>
+                                                <td>
+                                                    <span class="badge bg-primary">
+                                                        <i class="fas fa-calendar-days me-1"></i>{{$totalDays}} Gece
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Email</th>
+                                                <td>{{$res.Email}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Telefon</th>
+                                                <td>{{if $res.Phone}}{{$res.Phone}}{{else}}<span class="badge bg-secondary">Belirtilmemiş</span>{{end}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th scope="row" class="text-muted">Rezervasyon Durumu</th>
+                                                <td>
+                                                    {{if eq $res.ReservationStatus "pending"}}
+                                                        <span class="badge bg-warning">
+                                                            <i class="fas fa-clock me-1"></i>Onay Bekliyor
+                                                        </span>
+                                                    {{else if eq $res.ReservationStatus "accepted"}}
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check me-1"></i>Onaylandı
+                                                        </span>
+                                                    {{else if eq $res.ReservationStatus "rejected"}}
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times me-1"></i>Reddedildi
+                                                        </span>
+                                                    {{else}}
+                                                        <span class="badge bg-secondary">
+                                                            <i class="fas fa-question me-1"></i>Belirlenmemiş
+                                                        </span>
+                                                    {{end}}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Sağ Kolon - Fiyat ve Ödeme Bilgileri -->
+                            <div class="col-md-4">
+                                <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2"></i>Fiyat Detayları</h5>
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Günlük Fiyat:</span>
+                                            <span class="fw-bold">{{$roomInfo.RoomDailyPrice}} ₺</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Gece Sayısı:</span>
+                                            <span>{{$totalDays}}</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span class="h6">Toplam Tutar:</span>
+                                            <span class="h6 text-success fw-bold">{{$totalAmount}} ₺</span>
+                                        </div>
+
+                                        <h6 class="mb-2"><i class="fas fa-credit-card me-2"></i>Ödeme Bilgileri</h6>
+                                        <div class="mb-2">
+                                            <small class="text-muted">Ödeme Durumu:</small><br>
+                                            {{if eq $paymentInfo.PaymentStatus "paid"}}
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle me-1"></i>Ödendi
+                                                </span>
+                                            {{else if eq $paymentInfo.PaymentStatus "pending"}}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock me-1"></i>Ödeme Bekliyor
+                                                </span>
+                                            {{else if eq $paymentInfo.PaymentStatus "failed"}}
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times-circle me-1"></i>Ödeme Başarısız
+                                                </span>
+                                            {{else}}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-question me-1"></i>Belirlenmemiş
+                                                </span>
+                                            {{end}}
+                                        </div>
+                                        <div class="mb-2">
+                                            <small class="text-muted">Ödeme Yöntemi:</small><br>
+                                            {{if eq $paymentInfo.PaymentMethod "card"}}
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-credit-card me-1"></i>Kredi Kartı
+                                                </span>
+                                            {{else if eq $paymentInfo.PaymentMethod "balance"}}
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-wallet me-1"></i>Bakiye
+                                                </span>
+                                            {{else if eq $paymentInfo.PaymentMethod "later"}}
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock me-1"></i>Sonra Öde
+                                                </span>
+                                            {{else}}
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-question me-1"></i>Belirlenmemiş
+                                                </span>
+                                            {{end}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="/" class="btn btn-primary me-2">
+                                <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                            </a>
+                            {{if ne $paymentInfo.PaymentStatus "paid"}}
+                                <a href="/user/reservations" class="btn btn-success">
+                                    <i class="fas fa-credit-card me-2"></i>Rezervasyonlarım
+                                </a>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}

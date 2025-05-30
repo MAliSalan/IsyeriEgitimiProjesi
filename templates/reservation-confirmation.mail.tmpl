@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezervasyonunuz Onaylandı - Side Project Pansiyon</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .success-badge {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+            display: inline-block;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        .greeting {
+            font-size: 22px;
+            color: #2c3748;
+            margin-bottom: 20px;
+        }
+        .main-text {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .reservation-details {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #4caf50;
+        }
+        .detail-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3748;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .detail-value {
+            color: #2c3748;
+            font-size: 16px;
+        }
+        .checkin-info {
+            background: #e3f2fd;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .amenities {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+        .amenity {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+        .amenity-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .amenity-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+        .contact-info {
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .important-note {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .footer {
+            background: #2c3748;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .footer-text {
+            margin: 5px 0;
+            opacity: 0.9;
+        }
+        @media (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            .amenities {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">🏨 Side Project Pansiyon</div>
+            <div class="subtitle">Konfor ve huzurun buluştuğu nokta</div>
+        </div>
+        
+        <div class="content">
+            <div style="text-align: center;">
+                <div class="success-badge">✅ Rezervasyonunuz Onaylandı!</div>
+            </div>
+            
+            <div class="greeting">
+                Harika haber {{.FirstName}}! 🎉
+            </div>
+            
+            <p class="main-text">
+                Rezervasyonunuz başarıyla onaylanmıştır. Sizi Side Project Pansiyon'da ağırlamak için sabırsızlanıyoruz!
+            </p>
+            
+            <div class="reservation-details">
+                <div class="detail-header">
+                    🎫 Onaylanan Rezervasyon Detayları
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">🏨 Oda</div>
+                        <div class="detail-value">{{.RoomName}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">👥 Oda Kapasitesi</div>
+                        <div class="detail-value">{{if .Capacity}}{{.Capacity}} Kişi{{else}}Belirtilmemiş{{end}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📅 Giriş Tarihi</div>
+                        <div class="detail-value">{{.StartDate}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📅 Çıkış Tarihi</div>
+                        <div class="detail-value">{{.EndDate}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">🌙 Konaklama Süresi</div>
+                        <div class="detail-value">{{if .Nights}}{{.Nights}} Gece{{else}}Hesaplanıyor{{end}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">💰 Günlük Fiyat</div>
+                        <div class="detail-value">{{if .DailyPrice}}{{.DailyPrice}} ₺{{else}}Belirlendi{{end}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📧 E-posta</div>
+                        <div class="detail-value">{{.Email}}</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">📞 Telefon</div>
+                        <div class="detail-value">{{if .Phone}}{{.Phone}}{{else}}Belirtilmemiş{{end}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="checkin-info">
+                <h4>🕐 Check-in Bilgileri</h4>
+                <p><strong>Check-in Saati:</strong> 14:00 - 23:00</p>
+                <p><strong>Check-out Saati:</strong> 08:00 - 12:00</p>
+                <p><strong>Resepsiyon:</strong> 24 saat açık</p>
+                <div class="important-note">
+                    <strong>⚠️ Önemli:</strong> Giriş yaparken lütfen geçerli kimlik belgenizi yanınızda bulundurun.
+                </div>
+            </div>
+            
+            <h4>🏨 Otel Olanakları</h4>
+            <div class="amenities">
+                <div class="amenity">
+                    <div class="amenity-icon">📶</div>
+                    <div class="amenity-text">Ücretsiz WiFi</div>
+                </div>
+                <div class="amenity">
+                    <div class="amenity-icon">🍽️</div>
+                    <div class="amenity-text">Kahvaltı Dahil</div>
+                </div>
+                <div class="amenity">
+                    <div class="amenity-icon">🅿️</div>
+                    <div class="amenity-text">Ücretsiz Otopark</div>
+                </div>
+                <div class="amenity">
+                    <div class="amenity-icon">❄️</div>
+                    <div class="amenity-text">Klima</div>
+                </div>
+                <div class="amenity">
+                    <div class="amenity-icon">🧴</div>
+                    <div class="amenity-text">Banyo Malzemeleri</div>
+                </div>
+                <div class="amenity">
+                    <div class="amenity-icon">🧹</div>
+                    <div class="amenity-text">Günlük Temizlik</div>
+                </div>
+            </div>
+            
+            <div class="contact-info">
+                <h4>📍 Konum ve İletişim</h4>
+                <p><strong>Adres:</strong> Muğla Sıtkı Koçman Üniversitesi Teknoloji Fakültesi, Muğla</p>
+                <p><strong>Telefon:</strong> +90 (555) 123-4567</p>
+                <p><strong>E-posta:</strong> info@sideproject.com</p>
+                <p style="margin-top: 15px;">
+                    <strong>🗺️ Google Maps:</strong> <a href="#" style="color: #2196f3;">Konumu Görüntüle</a>
+                </p>
+            </div>
+            
+            <div class="payment-summary" style="background: linear-gradient(135deg, #e8f5e8 0%, #f1f8e9 100%); border-radius: 12px; padding: 25px; margin: 25px 0; border-left: 4px solid #4caf50;">
+                <h4>💳 Ödeme Detayları</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+                    <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <div style="font-weight: bold; color: #666; font-size: 14px; margin-bottom: 5px;">💰 Toplam Tutar</div>
+                        <div style="color: #2c3748; font-size: 18px; font-weight: bold;">{{if .TotalPrice}}{{.TotalPrice}} ₺{{else}}Hesaplandı{{end}}</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <div style="font-weight: bold; color: #666; font-size: 14px; margin-bottom: 5px;">💳 Ödeme Durumu</div>
+                        <div style="color: #4caf50; font-size: 16px; font-weight: bold;">{{if .PaymentStatus}}{{.PaymentStatus}}{{else}}✅ Ödendi{{end}}</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <div style="font-weight: bold; color: #666; font-size: 14px; margin-bottom: 5px;">🎫 Ödeme Yöntemi</div>
+                        <div style="color: #2c3748; font-size: 16px;">{{if .PaymentMethod}}{{.PaymentMethod}}{{else}}Kredi Kartı{{end}}</div>
+                    </div>
+                    <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        <div style="font-weight: bold; color: #666; font-size: 14px; margin-bottom: 5px;">📅 Ödeme Tarihi</div>
+                        <div style="color: #2c3748; font-size: 16px;">{{if .PaymentDate}}{{.PaymentDate}}{{else}}Tamamlandı{{end}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="main-text">
+                Konaklamanızla ilgili herhangi bir özel isteğiniz varsa, lütfen en geç 24 saat öncesinden bizimle iletişime geçin.
+            </p>
+            
+            <p class="main-text" style="text-align: center; font-weight: bold; color: #4caf50;">
+                Size unutulmaz bir konaklama deneyimi sunmak için hazırız! 🌟
+            </p>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-text">
+                <strong>Side Project Pansiyon</strong>
+            </div>
+            <div class="footer-text">
+                Muğla Sıtkı Koçman Üniversitesi Teknoloji Fakültesi, Muğla
+            </div>
+            <div class="footer-text">
+                © {{.Year}} Tüm hakları saklıdır.
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,116 @@
+{{template "base" .}}
+{{define "title"}}{{.Data.Room.RoomName}} - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-lg">
+                    <img src="{{.Data.RoomInfo.FirstPicURL}}" 
+                         class="card-img-top" alt="{{.Data.Room.RoomName}}">
+                    <div class="card-body p-5">
+                        <h1 class="card-title text-center mb-4">{{.Data.Room.RoomName}}</h1>
+                        <p class="lead text-center mb-5">
+                            {{.Data.RoomInfo.FirstText}}
+                        </p>
+
+                        <div class="row mb-5">
+                            <div class="col-md-4 text-center">
+                                <i class="{{.Data.RoomInfo.FirstTittleFontawesome}} fa-2x mb-3 text-primary"></i>
+                                <h5>{{.Data.RoomInfo.FirstTittle}}</h5>
+                                <p>{{.Data.RoomInfo.FirstTittleText}}</p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <i class="{{.Data.RoomInfo.SecondTittleFontawesome}} fa-2x mb-3 text-primary"></i>
+                                <h5>{{.Data.RoomInfo.SecondTittle}}</h5>
+                                <p>{{.Data.RoomInfo.SecondTittleText}}</p>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <i class="{{.Data.RoomInfo.ThirdTittleFontawesome}} fa-2x mb-3 text-primary"></i>
+                                <h5>{{.Data.RoomInfo.ThirdTittle}}</h5>
+                                <p>{{.Data.RoomInfo.ThirdTittleText}}</p>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="lead mb-3">Oda Fiyatı: {{.Data.RoomInfo.RoomDailyPrice}} TL / Gece</p>
+                            <p class="mb-4">Maksimum Kapasite: {{.Data.RoomInfo.RoomMaxCap}} Kişi</p>
+                            <button id="check-availability-button" class="btn btn-primary btn-lg px-5">
+                                <i class="fas fa-calendar-check me-2"></i>Müsaitlik Kontrolü
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    document.getElementById("check-availability-button").addEventListener("click", function () {
+        let html = `
+        <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
+            <div class="form-row">
+                <div class="col">
+                    <div class="form-row" id="reservation-dates-modal">
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="start" id="start" placeholder="Konaklama Başlangıç">
+                        </div>
+                        <div class="col">
+                            <input disabled required class="form-control" type="text" name="end" id="end" placeholder="Konaklama Bitiş">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+        `;
+        attention.custom({
+            title: 'Tarih Seçiniz',
+            msg: html,
+            willOpen: () => {
+                const elem = document.getElementById("reservation-dates-modal");
+                const rp = new DateRangePicker(elem, {
+                    format: 'yyyy-mm-dd',
+                    showOnFocus: true,
+                    minDate: new Date(),
+                })
+            },
+            didOpen: () => {
+                document.getElementById("start").removeAttribute("disabled");
+                document.getElementById("end").removeAttribute("disabled");
+            },
+            callback: function(result){
+                let form = document.getElementById("check-availability-form");
+                let formData = new FormData(form);
+                formData.append("csrf_token", "{{.CSRFToken}}");
+                formData.append("room_id", "{{.Data.Room.ID}}");
+
+                fetch('/search-availability-json',{
+                    method: 'post',
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        attention.custom({
+                            icon: 'success',
+                            showConfirmButton: false,
+                            showCancelButton: false,
+                            title: 'Oda Müsait',
+                            msg: 'Bu tarihlerde oda mevcuttur. Hemen rezervasyon yapabilirsiniz.'+
+                                '<p><a href="/general-rooms?id='+data.room_id+'&s='+data.start_date+'&e='+data.end_date+'" class="btn btn-primary">'+
+                                'Rezervasyon Yap</a></p>'+
+                                '<p><a href="/room/{{.Data.Room.ID}}" class="btn btn-secondary">İptal</a></p>'
+                        });
+                    } else {
+                        attention.error({
+                            title: 'Oda Dolu',
+                            msg: 'Bu tarihlerde oda rezerve edilmiştir. Lütfen başka bir tarih seçiniz.',
+                        });
+                    }
+                });
+            }
+        });
+    })
+</script>
+{{end}} 

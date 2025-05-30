@@ -1,0 +1,327 @@
+{{template "base" .}}
+{{define "title"}}Rezervasyonlarım - Side Project Pansiyon{{end}}
+{{define "content"}}
+    <div class="container my-5 pt-5">
+        <div class="row">
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow">
+                    <div class="card-body">
+                        <div class="text-center mb-5">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <h4 class="mt-3">{{with .Data.User}}{{.Firstname}} {{.LastName}}{{end}}</h4>
+                            <div class="mb-2">
+                                <span class="badge bg-success fs-6">
+                                    <i class="fas fa-wallet me-1"></i>{{with .Data.User}}{{.Balance}}{{end}} ₺
+                                </span>
+                            </div>
+                            <p class="text-muted">{{with .Data.User}}{{.Email}}{{end}}</p>
+                        </div>
+                        
+                        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                            <a class="nav-link mb-2" href="/user/profile">
+                                <i class="fas fa-user me-2"></i>Profil Bilgileri
+                            </a>
+                            <a class="nav-link active mb-2" href="/user/reservations">
+                                <i class="fas fa-calendar-check me-2"></i>Rezervasyonlarım
+                            </a>
+                            <a class="nav-link mb-2" href="/user/payments">
+                                <i class="fas fa-credit-card me-2"></i>Ödeme Bilgilerim
+                            </a>
+                            <a class="nav-link" href="/user/password">
+                                <i class="fas fa-lock me-2"></i>Şifre Değiştir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-9">
+                <div class="card border-0 shadow">
+                    <div class="card-header bg-transparent">
+                        <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Rezervasyonlarım</h5>
+                    </div>
+                    <div class="card-body">
+                        {{if .Data.Reservations}}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Oda</th>
+                                            <th>Giriş Tarihi</th>
+                                            <th>Çıkış Tarihi</th>
+                                            <th>Durum</th>
+                                            <th>Toplam Tutar</th>
+                                            <th>Ödeme Durumu</th>
+                                            <th>İşlemler</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{range .Data.Reservations}}
+                                            {{$paymentInfo := index $.Data.ReservationPayments .ID}}
+                                            <tr>
+                                                <td>{{.Room.RoomName}}</td>
+                                                <td>{{index $.StringMap (printf "start_date_%d" .ID)}}</td>
+                                                <td>{{index $.StringMap (printf "end_date_%d" .ID)}}</td>
+                                                <td>
+                                                    {{if eq .ReservationStatus "pending"}}
+                                                        <span class="badge bg-warning">Onay Bekliyor</span>
+                                                    {{else if eq .ReservationStatus "accepted"}}
+                                                        <span class="badge bg-success">Onaylandı</span>
+                                                    {{else if eq .ReservationStatus "rejected"}}
+                                                        <span class="badge bg-danger">Reddedildi</span>
+                                                    {{else}}
+                                                        <span class="badge bg-secondary">{{.ReservationStatus}}</span>
+                                                    {{end}}
+                                                </td>
+                                                <td>
+                                                    {{if gt $paymentInfo.TotalAmount 0}}
+                                                        <strong class="text-primary">{{$paymentInfo.TotalAmount}} ₺</strong>
+                                                    {{else}}
+                                                        <span class="badge bg-secondary">Belirlenmemiş</span>
+                                                    {{end}}
+                                                </td>
+                                                <td>
+                                                    {{if eq $paymentInfo.PaymentStatus "paid"}}
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check-circle me-1"></i>Ödendi
+                                                        </span>
+                                                    {{else if eq $paymentInfo.PaymentStatus "pending"}}
+                                                        <span class="badge bg-warning">
+                                                            <i class="fas fa-clock me-1"></i>Beklemede
+                                                        </span>
+                                                    {{else if eq $paymentInfo.PaymentStatus "failed"}}
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times-circle me-1"></i>Başarısız
+                                                        </span>
+                                                    {{else}}
+                                                        <span class="badge bg-secondary">
+                                                            <i class="fas fa-question-circle me-1"></i>Bilinmiyor
+                                                        </span>
+                                                    {{end}}
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex gap-2">
+                                                        {{if and (ne .ReservationStatus "rejected") (ne $paymentInfo.PaymentStatus "paid")}}
+                                                            <button class="btn btn-sm btn-success" onclick="payNow('{{.ID}}')">
+                                                                <i class="fas fa-credit-card me-1"></i>Şimdi Öde
+                                                            </button>
+                                                        {{end}}
+                                                        {{if ne .ReservationStatus "rejected"}}
+                                                            <button class="btn btn-sm btn-danger" onclick="confirmCancelReservation('{{.ID}}')">
+                                                                <i class="fas fa-trash-alt me-1"></i>İptal
+                                                            </button>
+                                                        {{else}}
+                                                            <span class="badge bg-secondary">İşlem Yapılamaz</span>
+                                                        {{end}}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {{else}}
+                            <div class="text-center py-5">
+                                <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                                <h5>Henüz bir rezervasyonunuz bulunmamaktadır.</h5>
+                                <p class="text-muted">Yeni bir rezervasyon yapmak için <a href="/search-availability">buraya tıklayın</a>.</p>
+                            </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{{end}}
+
+{{define "js"}}
+<script>
+    function confirmCancelReservation(id) {
+        if (confirm("Bu rezervasyonu iptal etmek istediğinizden emin misiniz?")) {
+            window.location.href = `/user/reservation/cancel/${id}`;
+        }
+    }
+    
+    function payNow(reservationId) {
+        // Rezervasyon bilgilerini al
+        fetch(`/api/reservation/${reservationId}`)
+        .then(response => response.json())
+        .then(reservation => {
+            // Ödeme modal'ını göster
+            Swal.fire({
+                title: `Rezervasyon #${reservationId} Ödemesi`,
+                html: `
+                    <div class="text-start">
+                        <div class="mb-3">
+                            <h6>Rezervasyon Detayları:</h6>
+                            <p class="small text-muted mb-1">Tutar: <strong>${reservation.total_amount} ₺</strong></p>
+                            <p class="small text-muted">Durum: <span class="badge bg-warning">Ödeme Bekliyor</span></p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Ödeme Yöntemi Seçin:</label>
+                            
+                            <!-- Bakiye Seçeneği -->
+                            <div class="form-check payment-method-option mb-2">
+                                <input class="form-check-input" type="radio" name="payment_method" 
+                                    id="balance_payment" value="balance">
+                                <label class="form-check-label d-flex align-items-center justify-content-between" for="balance_payment">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-wallet text-success me-2"></i>
+                                        <span>Bakiye</span>
+                                    </div>
+                                    <span class="badge bg-success">{{with .Data.User}}{{.Balance}}{{end}} ₺</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Kayıtlı Kartlar -->
+                            {{if .Data.ReservationPayments}}
+                                <!-- Kullanıcının kartlarını göster -->
+                                <div id="saved-cards-section">
+                                    <!-- Bu kısım AJAX ile doldurulacak -->
+                                </div>
+                            {{end}}
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Ödemeyi Tamamla',
+                cancelButtonText: 'İptal',
+                focusConfirm: false,
+                width: '500px',
+                customClass: {
+                    popup: 'swal2-popup',
+                    confirmButton: 'btn btn-success',
+                    cancelButton: 'btn btn-secondary'
+                },
+                didOpen: () => {
+                    // Kullanıcının kartlarını AJAX ile yükle
+                    fetch('/api/user/payment-methods')
+                    .then(response => response.json())
+                    .then(cards => {
+                        const savedCardsSection = document.getElementById('saved-cards-section');
+                        if (cards && cards.length > 0) {
+                            cards.forEach(card => {
+                                const cardHtml = `
+                                    <div class="form-check payment-method-option mb-2">
+                                        <input class="form-check-input" type="radio" name="payment_method" 
+                                            id="card_${card.id}" value="card_${card.id}">
+                                        <label class="form-check-label d-flex align-items-center" for="card_${card.id}">
+                                            <div class="d-flex align-items-center">
+                                                ${getCardIcon(card.card_type)}
+                                                <span>${card.card_type} **** ${card.last_four}</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                `;
+                                savedCardsSection.innerHTML += cardHtml;
+                            });
+                        }
+                    });
+                },
+                preConfirm: () => {
+                    const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+                    
+                    if (!selectedMethod) {
+                        Swal.showValidationMessage('Ödeme yöntemi seçiniz');
+                        return false;
+                    }
+                    
+                    // Bakiye seçildiyse bakiye kontrolü
+                    if (selectedMethod.value === 'balance') {
+                        const userBalance = parseInt('{{with .Data.User}}{{.Balance}}{{end}}') || 0;
+                        if (userBalance < reservation.total_amount) {
+                            Swal.showValidationMessage('Yetersiz bakiye. Mevcut: ' + userBalance + ' ₺, Gerekli: ' + reservation.total_amount + ' ₺');
+                            return false;
+                        }
+                    }
+                    
+                    return {
+                        reservationId: reservationId,
+                        paymentMethod: selectedMethod.value,
+                        totalAmount: reservation.total_amount
+                    };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const data = result.value;
+                    
+                    // Ödeme işlemi başlat
+                    Swal.fire({
+                        title: 'Ödeme İşleniyor...',
+                        html: 'Lütfen bekleyiniz...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // AJAX ile ödeme isteği
+                    const formData = new FormData();
+                    formData.append('csrf_token', '{{.CSRFToken}}');
+                    formData.append('reservation_id', data.reservationId);
+                    formData.append('payment_method', data.paymentMethod);
+                    formData.append('total_amount', data.totalAmount);
+                    
+                    fetch('/user/pay-reservation', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Ödeme Başarılı!',
+                                text: `${data.totalAmount} ₺ ödemeniz tamamlandı`,
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Ödeme Başarısız!',
+                                text: result.message || 'Ödeme işlenirken bir hata oluştu'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Hata!',
+                            text: 'Ödeme işlenirken bir hata oluştu'
+                        });
+                    });
+                }
+            });
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Hata!',
+                text: 'Rezervasyon bilgileri alınamadı'
+            });
+        });
+    }
+    
+    // Kart ikonu helper fonksiyonu
+    function getCardIcon(cardType) {
+        switch(cardType) {
+            case 'Visa':
+                return '<i class="fab fa-cc-visa text-primary me-2"></i>';
+            case 'MasterCard':
+                return '<i class="fab fa-cc-mastercard text-danger me-2"></i>';
+            case 'American Express':
+                return '<i class="fab fa-cc-amex text-info me-2"></i>';
+            case 'Troy':
+                return '<img src="/static/images/troy-logo.png" alt="Troy" style="height: 20px;" class="me-2">';
+            default:
+                return '<i class="fas fa-credit-card text-secondary me-2"></i>';
+        }
+    }
+</script>
+{{end}} 
